@@ -16,6 +16,7 @@
   const videoPosters = {};
   const driveFiles = new Map(); // id -> label
   const dropboxFiles = new Map(); // url (sans dl forcé) -> label
+  const vkFiles = new Map(); // url -> label
 
   const toAbsolute = (url) => {
     try {
@@ -72,6 +73,19 @@
       return u.toString();
     } catch {
       return url;
+    }
+  }
+
+  function isVkDocLink(url) {
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace(/^m\./, "").replace(/^www\./, "");
+      if (host !== "vk.com" && host !== "vk.ru") return false;
+      // Format des documents VK : /doc<owner_id, parfois négatif>_<doc_id>,
+      // ex. /doc-15164027_679123456
+      return /^\/doc-?\d+_\d+/.test(u.pathname);
+    } catch {
+      return false;
     }
   }
 
@@ -132,8 +146,20 @@
   }
 
   function scanOnce() {
-    document.querySelectorAll("img[src]").forEach((img) => {
-      const url = toAbsolute(img.src);
+    document.querySelectorAll("img").forEach((img) => {
+      // Beaucoup de sites (dont VK en version mobile) chargent les images en différé :
+      // src reste vide (ou pointe vers un pixel transparent en data:) tant que l'image
+      // n'a pas défilé dans le viewport, la vraie URL étant dans data-src ou équivalent.
+      let raw = img.getAttribute("src");
+      if (!raw || raw.startsWith("data:")) {
+        raw =
+          img.getAttribute("data-src") ||
+          img.getAttribute("data-original") ||
+          img.getAttribute("data-lazy-src") ||
+          img.getAttribute("data-lazy") ||
+          raw;
+      }
+      const url = toAbsolute(raw);
       if (!url) return;
       // naturalWidth/Height = dimensions réelles du fichier (0 si pas encore chargé).
       // width/height = taille affichée à l'écran, utilisée en repli.
@@ -213,6 +239,14 @@
           const label = (a.textContent || "").trim();
           dropboxFiles.set(url, label || null);
         }
+        return;
+      }
+
+      if (isVkDocLink(url)) {
+        if (!vkFiles.has(url)) {
+          const label = (a.textContent || "").trim();
+          vkFiles.set(url, label || null);
+        }
       }
     });
 
@@ -237,6 +271,12 @@
       filename: label || filenameFromUrl(url),
       provider: "dropbox",
     }));
+    const vkEntries = Array.from(vkFiles.entries()).map(([url, label]) => ({
+      url,
+      viewUrl: url,
+      filename: label || filenameFromUrl(url),
+      provider: "vk",
+    }));
     return {
       images: Array.from(images.entries()).map(([url, dim]) => ({
         ...toEntry(url),
@@ -245,7 +285,7 @@
       })),
       videos: Array.from(videos).map((url) => ({ ...toEntry(url), poster: videoPosters[url] || null })),
       pdfs: Array.from(pdfs).map(toEntry),
-      drive: [...driveEntries, ...dropboxEntries],
+      drive: [...driveEntries, ...dropboxEntries, ...vkEntries],
     };
   }
 

@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "Media Downloader",
+    "description": "Nom de l'extension"
+  },
+  "extDescription": {
+    "message": "Scanne la page active et télécharge les images, vidéos, PDFs et fichiers Cloud (Drive/Dropbox) trouvés, organisés par dossier.",
+    "description": "Description de l'extension"
+  }
+}

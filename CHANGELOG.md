@@ -7,6 +7,17 @@ Ce projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (`MAJEU
 
 La version actuelle est visible en bas du popup, et dans `manifest.json` (`version`).
 
+## [1.13.0]
+### Ajouté
+- Support de VK (`vk.com`, `vk.ru`, y compris les versions mobiles `m.vk.*`) : les liens vers des documents (`/doc<owner_id>_<doc_id>`, typiquement des PDFs de partitions, tutoriels, etc. dans les sujets de forum) sont détectés et ajoutés à l'onglet Cloud avec une icône dédiée (📎).
+- Détection d'images élargie au lazy-loading (`data-src`, `data-original`, `data-lazy-src`, `data-lazy`), fréquent sur les versions mobiles de sites comme VK — une image dont le `src` pointe encore vers un pixel transparent est maintenant repérée via son attribut de chargement différé.
+
+## [1.12.0]
+### Ajouté
+- Interface bilingue français / anglais : sélecteur FR/EN en haut du popup, préférence mémorisée (`chrome.storage.local`), langue devinée par défaut à partir de la langue du navigateur.
+- Tous les libellés, messages de statut et la page `index.html` générée s'adaptent à la langue choisie.
+- Nom et description de l'extension localisés (`_locales/fr`, `_locales/en`), affichés automatiquement par Chrome/Edge dans `chrome://extensions` selon la langue du navigateur.
+
 ## [1.11.0]
 ### Ajouté
 - Filtre par taille minimale d'image (champ « Taille min. images (px) » dans l'onglet Images) pour écarter facilement logos/icônes/pastilles. Les images dont la taille n'est pas encore connue (pas chargées au moment du scan) ne sont jamais masquées par précaution.

@@ -100,10 +100,17 @@
 </style>
 </head>
 <body>
-  <h1>Media Downloader</h1>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+    <h1 id="appTitle" style="margin:0;">Media Downloader</h1>
+    <div style="font-size:11px;">
+      <a id="langFr" data-lang="fr" style="cursor:pointer; text-decoration:none; padding:2px 4px;">FR</a>
+      <span style="color:#cbd5e1;">|</span>
+      <a id="langEn" data-lang="en" style="cursor:pointer; text-decoration:none; padding:2px 4px;">EN</a>
+    </div>
+  </div>
   <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:#475569; margin-bottom:8px;">
     <input type="checkbox" id="autoScroll" />
-    Défilement automatique (pages à chargement infini, ex. Facebook)
+    <span id="autoScrollLabel">Défilement automatique (pages à chargement infini, ex. Facebook)</span>
   </label>
   <button id="scanBtn">Scanner la page</button>
 
@@ -113,10 +120,10 @@
   </div>
 
   <div class="tabs">
-    <div class="tab active" data-type="images">Images (<span id="countImages">0</span>)</div>
-    <div class="tab" data-type="videos">Vidéos (<span id="countVideos">0</span>)</div>
-    <div class="tab" data-type="pdfs">PDFs (<span id="countPdfs">0</span>)</div>
-    <div class="tab" data-type="drive">Cloud (<span id="countDrive">0</span>)</div>
+    <div class="tab active" data-type="images"><span id="tabImagesLabel">Images</span> (<span id="countImages">0</span>)</div>
+    <div class="tab" data-type="videos"><span id="tabVideosLabel">Vidéos</span> (<span id="countVideos">0</span>)</div>
+    <div class="tab" data-type="pdfs"><span id="tabPdfsLabel">PDFs</span> (<span id="countPdfs">0</span>)</div>
+    <div class="tab" data-type="drive"><span id="tabDriveLabel">Cloud</span> (<span id="countDrive">0</span>)</div>
   </div>
 
   <div class="toolbar">
@@ -125,12 +132,12 @@
   </div>
 
   <div id="imageFilterRow" style="display:flex; align-items:center; gap:6px; font-size:11px; color:#475569; margin-bottom:6px;">
-    <label for="minImageSize">Taille min. images (px) :</label>
+    <label for="minImageSize" id="minImageSizeLabel">Taille min. images (px) :</label>
     <input type="number" id="minImageSize" min="0" step="10" value="0" style="width:60px; padding:2px 4px; border:1px solid #e2e8f0; border-radius:4px; font-size:11px;">
-    <span style="color:#94a3b8;">(0 = désactivé)</span>
+    <span id="minImageSizeHint" style="color:#94a3b8;">(0 = désactivé)</span>
   </div>
 
-  <div id="list"><div class="empty">Clique sur « Scanner la page » pour commencer.</div></div>
+  <div id="list"><div class="empty" id="initialEmpty">Clique sur « Scanner la page » pour commencer.</div></div>
 
   <button id="downloadBtn" disabled>Télécharger la sélection</button>
   <div style="text-align:center; margin-top:4px;">

@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Media Downloader",
-  "version": "1.11.0",
-  "description": "Scanne la page active et télécharge les images, vidéos et PDFs trouvés.",
+  "name": "__MSG_extName__",
+  "version": "1.13.0",
+  "description": "__MSG_extDescription__",
+  "default_locale": "fr",
   "permissions": ["downloads", "activeTab", "scripting", "storage"],
   "host_permissions": ["<all_urls>"],
   "icons": {
@@ -13,7 +14,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Media Downloader",
+    "default_title": "__MSG_extName__",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",

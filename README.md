@@ -35,6 +35,18 @@ L'extension détecte aussi les images posées en **`background-image` CSS** (ban
 - Seuls les éléments visibles à l'écran au moment précis du scan sont analysés pour `background-image` (par souci de performance sur les grandes pages) — combine avec le défilement automatique pour couvrir toute la page.
 - « Tout sélectionner » / « Tout désélectionner » n'agissent que sur les images actuellement affichées (donc déjà filtrées par la taille minimale).
 
+## Langue de l'interface (français / anglais)
+
+Un sélecteur **FR | EN** en haut du popup permet de basculer la langue à tout moment. Le choix est mémorisé (`chrome.storage.local`) et réappliqué à chaque ouverture du popup. Par défaut, l'extension devine la langue à partir de celle du navigateur (français si la langue du navigateur commence par « fr », anglais sinon).
+
+Ce que la langue affecte :
+- Tous les libellés et boutons du popup (onglets, statuts, bouton de téléchargement...).
+- La page `index.html` générée (titres de section, texte source/date, attribut `lang` du document).
+
+Ce qu'elle n'affecte **pas** :
+- La détection des boutons « Voir plus » / « See more » sur la page scannée — l'extension reconnaît déjà plusieurs langues (FR, EN, DE, ES, PT) indépendamment de la langue de l'interface, car il s'agit de la langue du site visité, pas de celle de l'extension.
+- Le nom et la description de l'extension dans `chrome://extensions`, qui suivent la langue du navigateur (mécanisme standard `_locales`/`chrome.i18n`, séparé du sélecteur du popup).
+
 ## Version
 
 Le numéro de version courant est affiché en bas du popup, et visible aussi dans `chrome://extensions` sous le nom de l'extension. L'historique complet des changements est dans [`CHANGELOG.md`](./CHANGELOG.md).
@@ -68,6 +80,16 @@ Si tu scannes et télécharges deux fois la même page (ex. après avoir fait d�
 - Un lien **« Oublier l'historique de ce site »** sous le bouton de téléchargement permet de tout réinitialiser si tu veux forcer un re-téléchargement complet.
 
 **Limite à connaître** : la déduplication se fait sur l'URL exacte du fichier. Si un site change l'URL derrière une même image/vidéo/PDF (CDN avec URL tournante, lien Drive régénéré, etc.), l'extension le traitera comme un nouveau fichier — ça reste un doublon de contenu, difficile à détecter sans télécharger et comparer les fichiers eux-mêmes.
+
+## Support de VK
+
+Les liens vers des documents VK (`vk.com/doc<owner_id>_<doc_id>`, `vk.ru/doc...`, versions mobiles `m.vk.com`/`m.vk.ru`) sont détectés et regroupés dans l'onglet **Cloud** avec l'icône 📎. C'est le format utilisé par VK pour les fichiers joints (PDFs, partitions, documents divers) dans les sujets de forum, messages et publications.
+
+L'extension navigue directement vers l'URL du document pour le téléchargement (comme pour tout autre lien) — sur VK, cette URL sert généralement le fichier brut plutôt qu'une page de prévisualisation, donc ça fonctionne pour la majorité des cas sans traitement supplémentaire.
+
+La détection d'images (`<img>`) a aussi été élargie pour couvrir le **lazy-loading** (chargement différé au scroll), une technique très utilisée sur les versions mobiles de sites comme VK : si l'attribut `src` d'une image pointe encore vers un pixel transparent (le `src` réel n'est posé qu'au moment où l'image entre dans le viewport), l'extension regarde aussi `data-src`, `data-original`, `data-lazy-src` et `data-lazy`.
+
+**Limite connue** : les vidéos VK utilisent un lecteur personnalisé (pas une balise `<video>` standard) et ne sont pas détectées pour l'instant.
 
 ## Organisation en dossiers + page d'index
 
@@ -142,8 +164,10 @@ L'extension détecte aussi les liens `drive.google.com/file/d/{ID}/view` (et var
 media-downloader/
 ├── manifest.json   # Configuration de l'extension (Manifest V3)
 ├── popup.html      # Interface du popup
-├── popup.js        # Logique du popup : pilotage du scan, affichage, téléchargements
+├── popup.js        # Logique du popup : i18n, pilotage du scan, affichage, téléchargements
 ├── content.js      # Content script injecté dans la page : scan + défilement + pause/stop
+├── _locales/       # Nom/description localisés (fr, en) pour chrome://extensions
+├── icons/          # Icônes de l'extension
 ├── CHANGELOG.md    # Historique des versions
 └── README.md
 ```

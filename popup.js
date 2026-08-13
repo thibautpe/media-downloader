@@ -1,3 +1,173 @@
+// --- Internationalisation (FR / EN) --------------------------------------
+const translations = {
+  fr: {
+    appTitle: "Media Downloader",
+    autoScrollLabel: "Défilement automatique (pages à chargement infini, ex. Facebook)",
+    scanBtn: "Scanner la page",
+    pauseBtn: "⏸ Pause",
+    resumeBtn: "▶ Reprendre",
+    stopBtn: "⏹ Arrêter",
+    tabImages: "Images",
+    tabVideos: "Vidéos",
+    tabPdfs: "PDFs",
+    tabDrive: "Cloud",
+    selectAll: "Tout sélectionner",
+    selectNone: "Tout désélectionner",
+    minImageSizeLabel: "Taille min. images (px) :",
+    minImageSizeHint: "(0 = désactivé)",
+    downloadBtn: "Télécharger la sélection",
+    downloadBtnCount: (n) => `Télécharger la sélection (${n})`,
+    resetHistory: "Oublier l'historique de ce site (repartir de zéro)",
+    initialEmpty: "Clique sur « Scanner la page » pour commencer.",
+    emptyCategory: "Rien trouvé dans cette catégorie.",
+    emptyFiltered: "Aucune image ne dépasse la taille minimale indiquée.",
+    filteredNote: (shown, total) => `${shown} / ${total} affichées (filtre de taille actif).`,
+    statusScanPrep: "Préparation du scan...",
+    statusScanError: "Impossible de scanner cette page (page protégée par le navigateur ?)",
+    statusStopping: "Arrêt en cours... (les résultats déjà trouvés seront affichés)",
+    statusPaused: (i, v, p, d) => `⏸ En pause — ${i} images, ${v} vidéos, ${p} PDFs, ${d} Cloud trouvés jusqu'ici.`,
+    statusProgress: (idx, i, v, p, d) => `Défilement ${idx}... ${i} images, ${v} vidéos, ${p} PDFs, ${d} Cloud trouvés.`,
+    statusDone: (prefix, i, v, p, d) => `${prefix}Trouvé : ${i} images, ${v} vidéos, ${p} PDFs, ${d} fichiers Cloud (Drive/Dropbox).`,
+    stoppedPrefix: "Scan arrêté manuellement. ",
+    statusCheckingHistory: (folder) => `Vérification de l'historique pour "${folder}/"...`,
+    statusDownloadProgress: (n, total, skipped) => `Téléchargement ${n}/${total}... (${skipped} déjà présents, ignorés)`,
+    statusDownloadDone: (n, folder, skipNote) => `${n} nouveau(x) fichier(s) téléchargé(s) dans "${folder}/"${skipNote}. index.html mis à jour et consolidé.`,
+    skipNote: (n) => ` (${n} déjà présents, ignorés)`,
+    resetConfirm: (folder) => `Oublier l'historique de téléchargement pour "${folder}" ?\nLe prochain téléchargement retéléchargera tout et régénérera l'index.html en repartant de zéro.`,
+    resetNeedsScan: "Lance d'abord un scan pour identifier le site.",
+    resetDone: (folder) => `Historique de "${folder}" oublié.`,
+    indexTitle: (site) => `Médias téléchargés — ${site}`,
+    indexHeading: "Médias téléchargés",
+    indexSource: "Source :",
+    indexGenerated: "Généré le",
+    indexNone: "Aucun fichier téléchargé.",
+    defaultFilename: "fichier",
+    defaultFolder: "site",
+    categoryTitles: { images: "🖼️ Images", videos: "🎬 Vidéos", pdfs: "📄 PDFs", drive: "☁️ Cloud (Drive / Dropbox)" },
+    htmlLang: "fr",
+    dateLocale: "fr-FR",
+  },
+  en: {
+    appTitle: "Media Downloader",
+    autoScrollLabel: "Auto-scroll (infinite-loading pages, e.g. Facebook)",
+    scanBtn: "Scan page",
+    pauseBtn: "⏸ Pause",
+    resumeBtn: "▶ Resume",
+    stopBtn: "⏹ Stop",
+    tabImages: "Images",
+    tabVideos: "Videos",
+    tabPdfs: "PDFs",
+    tabDrive: "Cloud",
+    selectAll: "Select all",
+    selectNone: "Deselect all",
+    minImageSizeLabel: "Min. image size (px):",
+    minImageSizeHint: "(0 = off)",
+    downloadBtn: "Download selection",
+    downloadBtnCount: (n) => `Download selection (${n})`,
+    resetHistory: "Forget this site's history (start fresh)",
+    initialEmpty: 'Click "Scan page" to get started.',
+    emptyCategory: "Nothing found in this category.",
+    emptyFiltered: "No image is larger than the minimum size.",
+    filteredNote: (shown, total) => `${shown} / ${total} shown (size filter active).`,
+    statusScanPrep: "Preparing scan...",
+    statusScanError: "Couldn't scan this page (browser-protected page?)",
+    statusStopping: "Stopping... (results found so far will be shown)",
+    statusPaused: (i, v, p, d) => `⏸ Paused — ${i} images, ${v} videos, ${p} PDFs, ${d} Cloud found so far.`,
+    statusProgress: (idx, i, v, p, d) => `Scrolling ${idx}... ${i} images, ${v} videos, ${p} PDFs, ${d} Cloud found.`,
+    statusDone: (prefix, i, v, p, d) => `${prefix}Found: ${i} images, ${v} videos, ${p} PDFs, ${d} Cloud files (Drive/Dropbox).`,
+    stoppedPrefix: "Scan stopped manually. ",
+    statusCheckingHistory: (folder) => `Checking history for "${folder}/"...`,
+    statusDownloadProgress: (n, total, skipped) => `Downloading ${n}/${total}... (${skipped} already present, skipped)`,
+    statusDownloadDone: (n, folder, skipNote) => `${n} new file(s) downloaded to "${folder}/"${skipNote}. index.html updated and consolidated.`,
+    skipNote: (n) => ` (${n} already present, skipped)`,
+    resetConfirm: (folder) => `Forget download history for "${folder}"?\nThe next download will re-download everything and rebuild index.html from scratch.`,
+    resetNeedsScan: "Run a scan first to identify the site.",
+    resetDone: (folder) => `History for "${folder}" forgotten.`,
+    indexTitle: (site) => `Downloaded media — ${site}`,
+    indexHeading: "Downloaded media",
+    indexSource: "Source:",
+    indexGenerated: "Generated on",
+    indexNone: "No file downloaded.",
+    defaultFilename: "file",
+    defaultFolder: "site",
+    categoryTitles: { images: "🖼️ Images", videos: "🎬 Videos", pdfs: "📄 PDFs", drive: "☁️ Cloud (Drive / Dropbox)" },
+    htmlLang: "en",
+    dateLocale: "en-US",
+  },
+};
+
+let uiLang = "fr";
+
+function t(key, ...args) {
+  const dict = translations[uiLang] || translations.fr;
+  const val = dict[key];
+  return typeof val === "function" ? val(...args) : val !== undefined ? val : key;
+}
+
+function guessDefaultLang() {
+  try {
+    const browserLang = chrome.i18n.getUILanguage() || navigator.language || "fr";
+    return browserLang.toLowerCase().startsWith("fr") ? "fr" : "en";
+  } catch {
+    return "fr";
+  }
+}
+
+function applyStaticTranslations() {
+  document.getElementById("appTitle").textContent = t("appTitle");
+  document.getElementById("autoScrollLabel").textContent = t("autoScrollLabel");
+  document.getElementById("scanBtn").textContent = t("scanBtn");
+  document.getElementById("pauseBtn").textContent = isPaused ? t("resumeBtn") : t("pauseBtn");
+  document.getElementById("stopBtn").textContent = t("stopBtn");
+  document.getElementById("tabImagesLabel").textContent = t("tabImages");
+  document.getElementById("tabVideosLabel").textContent = t("tabVideos");
+  document.getElementById("tabPdfsLabel").textContent = t("tabPdfs");
+  document.getElementById("tabDriveLabel").textContent = t("tabDrive");
+  document.getElementById("selectAll").textContent = t("selectAll");
+  document.getElementById("selectNone").textContent = t("selectNone");
+  document.getElementById("minImageSizeLabel").textContent = t("minImageSizeLabel");
+  document.getElementById("minImageSizeHint").textContent = t("minImageSizeHint");
+  document.getElementById("resetHistory").textContent = t("resetHistory");
+  document.documentElement.lang = t("htmlLang");
+
+  const initialEmptyEl = document.getElementById("initialEmpty");
+  if (initialEmptyEl) initialEmptyEl.textContent = t("initialEmpty");
+
+  updateDownloadBtn();
+
+  document.getElementById("langFr").style.fontWeight = uiLang === "fr" ? "bold" : "normal";
+  document.getElementById("langFr").style.color = uiLang === "fr" ? "#2563eb" : "#94a3b8";
+  document.getElementById("langEn").style.fontWeight = uiLang === "en" ? "bold" : "normal";
+  document.getElementById("langEn").style.color = uiLang === "en" ? "#2563eb" : "#94a3b8";
+
+  const versionInfoEl = document.getElementById("versionInfo");
+  if (versionInfoEl) {
+    versionInfoEl.textContent = `${t("appTitle")} v${chrome.runtime.getManifest().version}`;
+  }
+}
+
+async function setLang(lang) {
+  uiLang = lang === "en" ? "en" : "fr";
+  await chrome.storage.local.set({ uiLang });
+  applyStaticTranslations();
+  // Un scan a peut-être déjà rempli la liste : on la ré-affiche dans la nouvelle langue
+  // sans perdre les résultats ni la sélection en cours.
+  if ((media[currentTab] || []).length > 0 || listEl.querySelector(".empty")) {
+    renderList();
+  }
+}
+
+document.getElementById("langFr").addEventListener("click", () => setLang("fr"));
+document.getElementById("langEn").addEventListener("click", () => setLang("en"));
+
+(async () => {
+  const stored = await chrome.storage.local.get("uiLang");
+  uiLang = stored.uiLang || guessDefaultLang();
+  applyStaticTranslations();
+})();
+
+// ---------------------------------------------------------------------------
+
 let media = { images: [], videos: [], pdfs: [], drive: [] };
 let currentTab = "images";
 let activeTabId = null;
@@ -19,10 +189,6 @@ document.getElementById("scanBtn").addEventListener("click", startScan);
 document.getElementById("downloadBtn").addEventListener("click", downloadSelected);
 document.getElementById("resetHistory").addEventListener("click", resetSiteHistory);
 
-const versionInfoEl = document.getElementById("versionInfo");
-if (versionInfoEl) {
-  versionInfoEl.textContent = `Media Downloader v${chrome.runtime.getManifest().version}`;
-}
 document.getElementById("selectAll").addEventListener("click", () => toggleAll(true));
 document.getElementById("selectNone").addEventListener("click", () => toggleAll(false));
 document.getElementById("minImageSize").addEventListener("input", () => {
@@ -57,8 +223,8 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
     }
 
     statusEl.textContent = msg.paused
-      ? `⏸ En pause — ${media.images.length} images, ${media.videos.length} vidéos, ${media.pdfs.length} PDFs, ${media.drive.length} Cloud trouvés jusqu'ici.`
-      : `Défilement ${msg.scrollIndex}... ${media.images.length} images, ${media.videos.length} vidéos, ${media.pdfs.length} PDFs, ${media.drive.length} Cloud trouvés.`;
+      ? t("statusPaused", media.images.length, media.videos.length, media.pdfs.length, media.drive.length)
+      : t("statusProgress", msg.scrollIndex, media.images.length, media.videos.length, media.pdfs.length, media.drive.length);
   } else if (msg.type === "mediaDownloaderDone") {
     media = msg.media;
     finishScan(msg.stopped);
@@ -80,7 +246,7 @@ async function startScan() {
   activeTabUrl = tab.url;
 
   scanBtn.disabled = true;
-  statusEl.textContent = "Préparation du scan...";
+  statusEl.textContent = t("statusScanPrep");
   listEl.innerHTML = "";
 
   try {
@@ -90,14 +256,14 @@ async function startScan() {
       options: { autoScroll, maxScrolls: 40, waitMs: 700 },
     });
   } catch (err) {
-    statusEl.textContent = "Impossible de scanner cette page (page protégée par le navigateur ?)";
+    statusEl.textContent = t("statusScanError");
     scanBtn.disabled = false;
     return;
   }
 
   if (autoScroll) {
     isPaused = false;
-    pauseBtn.textContent = "⏸ Pause";
+    pauseBtn.textContent = t("pauseBtn");
     scrollControls.style.display = "flex";
   }
 }
@@ -106,13 +272,13 @@ function togglePause() {
   if (!activeTabId) return;
   isPaused = !isPaused;
   chrome.tabs.sendMessage(activeTabId, { type: isPaused ? "mediaDownloaderPause" : "mediaDownloaderResume" });
-  pauseBtn.textContent = isPaused ? "▶ Reprendre" : "⏸ Pause";
+  pauseBtn.textContent = isPaused ? t("resumeBtn") : t("pauseBtn");
 }
 
 function stopScan() {
   if (!activeTabId) return;
   chrome.tabs.sendMessage(activeTabId, { type: "mediaDownloaderStop" });
-  statusEl.textContent = "Arrêt en cours... (les résultats déjà trouvés seront affichés)";
+  statusEl.textContent = t("statusStopping");
 }
 
 function finishScan(wasStopped) {
@@ -122,8 +288,8 @@ function finishScan(wasStopped) {
 
   updateCounts();
 
-  const prefix = wasStopped ? "Scan arrêté manuellement. " : "";
-  statusEl.textContent = `${prefix}Trouvé : ${media.images.length} images, ${media.videos.length} vidéos, ${media.pdfs.length} PDFs, ${media.drive.length} fichiers Cloud (Drive/Dropbox).`;
+  const prefix = wasStopped ? t("stoppedPrefix") : "";
+  statusEl.textContent = t("statusDone", prefix, media.images.length, media.videos.length, media.pdfs.length, media.drive.length);
   renderList();
 }
 
@@ -152,13 +318,13 @@ function renderList() {
   document.getElementById("imageFilterRow").style.display = currentTab === "images" ? "flex" : "none";
 
   if (allItems.length === 0) {
-    listEl.innerHTML = '<div class="empty">Rien trouvé dans cette catégorie.</div>';
+    listEl.innerHTML = `<div class="empty">${t("emptyCategory")}</div>`;
     updateDownloadBtn();
     return;
   }
 
   if (items.length === 0) {
-    listEl.innerHTML = '<div class="empty">Aucune image ne dépasse la taille minimale indiquée.</div>';
+    listEl.innerHTML = `<div class="empty">${t("emptyFiltered")}</div>`;
     updateDownloadBtn();
     return;
   }
@@ -166,7 +332,7 @@ function renderList() {
   if (currentTab === "images" && items.length < allItems.length) {
     const note = document.createElement("div");
     note.style.cssText = "font-size:10px; color:#94a3b8; padding:2px 4px 6px;";
-    note.textContent = `${items.length} / ${allItems.length} affichées (filtre de taille actif).`;
+    note.textContent = t("filteredNote", items.length, allItems.length);
     listEl.appendChild(note);
   }
 
@@ -213,7 +379,7 @@ function renderList() {
     } else if (currentTab === "pdfs") {
       row.appendChild(makeIcon("📄"));
     } else if (currentTab === "drive") {
-      row.appendChild(makeIcon(entry.provider === "dropbox" ? "📦" : "🗂️"));
+      row.appendChild(makeIcon(entry.provider === "dropbox" ? "📦" : entry.provider === "vk" ? "📎" : "🗂️"));
     }
 
     row.appendChild(nameSpan);
@@ -248,7 +414,7 @@ function toggleAll(checked) {
 function updateDownloadBtn() {
   const total = Object.values(selected).reduce((sum, set) => sum + set.size, 0);
   downloadBtn.disabled = total === 0;
-  downloadBtn.textContent = total > 0 ? `Télécharger la sélection (${total})` : "Télécharger la sélection";
+  downloadBtn.textContent = total > 0 ? t("downloadBtnCount", total) : t("downloadBtn");
 }
 
 function manifestKeyFor(siteFolder) {
@@ -266,34 +432,34 @@ async function saveManifest(siteFolder, manifest) {
 }
 
 async function resetSiteHistory() {
-  let siteFolder = "media-downloader";
+  let siteFolder = t("defaultFolder");
   try {
     siteFolder = sanitizeFolderName(new URL(activeTabUrl).hostname);
   } catch {
-    statusEl.textContent = "Lance d'abord un scan pour identifier le site.";
+    statusEl.textContent = t("resetNeedsScan");
     return;
   }
-  if (!confirm(`Oublier l'historique de téléchargement pour "${siteFolder}" ?\nLe prochain téléchargement retéléchargera tout et régénérera l'index.html en repartant de zéro.`)) {
+  if (!confirm(t("resetConfirm", siteFolder))) {
     return;
   }
   await chrome.storage.local.remove(manifestKeyFor(siteFolder));
-  statusEl.textContent = `Historique de "${siteFolder}" oublié.`;
+  statusEl.textContent = t("resetDone", siteFolder);
 }
 
-const CATEGORY_LABELS = {
-  images: { folder: "images", title: "🖼️ Images" },
-  videos: { folder: "videos", title: "🎬 Vidéos" },
-  pdfs: { folder: "pdfs", title: "📄 PDFs" },
-  drive: { folder: "cloud", title: "☁️ Cloud (Drive / Dropbox)" },
+const CATEGORY_FOLDERS = {
+  images: "images",
+  videos: "videos",
+  pdfs: "pdfs",
+  drive: "cloud",
 };
 
 function sanitizeFilename(name) {
-  const cleaned = (name || "fichier").replace(/[\\/:*?"<>|\u0000-\u001F]/g, "_").trim();
-  return cleaned.slice(0, 150) || "fichier";
+  const cleaned = (name || t("defaultFilename")).replace(/[\\/:*?"<>|\u0000-\u001F]/g, "_").trim();
+  return cleaned.slice(0, 150) || t("defaultFilename");
 }
 
 function sanitizeFolderName(hostname) {
-  return (hostname || "site").replace(/[^a-zA-Z0-9.-]/g, "_");
+  return (hostname || t("defaultFolder")).replace(/[^a-zA-Z0-9.-]/g, "_");
 }
 
 function escapeHtml(str) {
@@ -305,8 +471,9 @@ function escapeHtml(str) {
 }
 
 function buildIndexHtml(siteFolder, sourceUrl, downloadedByCategory) {
-  const sections = Object.entries(CATEGORY_LABELS)
-    .map(([key, { title }]) => {
+  const categoryTitles = t("categoryTitles");
+  const sections = Object.keys(CATEGORY_FOLDERS)
+    .map((key) => {
       const items = downloadedByCategory[key] || [];
       if (items.length === 0) return "";
       const cards = items
@@ -321,17 +488,17 @@ function buildIndexHtml(siteFolder, sourceUrl, downloadedByCategory) {
         })
         .join("\n");
       return `<section>
-        <h2>${title} <span class="count">(${items.length})</span></h2>
+        <h2>${categoryTitles[key]} <span class="count">(${items.length})</span></h2>
         <div class="grid">${cards}</div>
       </section>`;
     })
     .join("\n");
 
   return `<!DOCTYPE html>
-<html lang="fr">
+<html lang="${t("htmlLang")}">
 <head>
 <meta charset="UTF-8">
-<title>Médias téléchargés — ${escapeHtml(siteFolder)}</title>
+<title>${escapeHtml(t("indexTitle", siteFolder))}</title>
 <style>
   body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }
   h1 { font-size: 20px; margin: 0 0 4px; }
@@ -348,9 +515,9 @@ function buildIndexHtml(siteFolder, sourceUrl, downloadedByCategory) {
 </style>
 </head>
 <body>
-  <h1>Médias téléchargés</h1>
-  <p class="meta">Source : <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(sourceUrl)}</a><br>Généré le ${new Date().toLocaleString("fr-FR")}</p>
-  ${sections || '<p>Aucun fichier téléchargé.</p>'}
+  <h1>${t("indexHeading")}</h1>
+  <p class="meta">${t("indexSource")} <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(sourceUrl)}</a><br>${t("indexGenerated")} ${new Date().toLocaleString(t("dateLocale"))}</p>
+  ${sections || `<p>${t("indexNone")}</p>`}
 </body>
 </html>`;
 }
@@ -374,21 +541,21 @@ async function downloadSelected() {
 
   downloadBtn.disabled = true;
 
-  let siteFolder = "media-downloader";
+  let siteFolder = t("defaultFolder");
   try {
     siteFolder = sanitizeFolderName(new URL(activeTabUrl).hostname);
   } catch {
     /* URL absente ou invalide, on garde le nom par défaut */
   }
 
-  statusEl.textContent = `Vérification de l'historique pour "${siteFolder}/"...`;
+  statusEl.textContent = t("statusCheckingHistory", siteFolder);
 
   const manifest = await loadManifest(siteFolder);
 
   // URLs déjà téléchargées lors d'une session précédente (identité = URL source, pas le nom de fichier).
   const knownUrls = {};
   const usedNames = {};
-  for (const category of Object.keys(CATEGORY_LABELS)) {
+  for (const category of Object.keys(CATEGORY_FOLDERS)) {
     knownUrls[category] = new Set((manifest[category] || []).map((e) => e.sourceUrl));
     usedNames[category] = new Set((manifest[category] || []).map((e) => e.name.toLowerCase()));
   }
@@ -397,7 +564,7 @@ async function downloadSelected() {
   let skippedDuplicates = 0;
   const toDownloadTotal = total;
 
-  for (const [category, { folder }] of Object.entries(CATEGORY_LABELS)) {
+  for (const [category, folder] of Object.entries(CATEGORY_FOLDERS)) {
     const items = (media[category] || []).filter((entry) => selected[category].has(entry.url));
 
     for (const entry of items) {
@@ -423,7 +590,7 @@ async function downloadSelected() {
       knownUrls[category].add(entry.url);
 
       const relPath = `${folder}/${name}`;
-      statusEl.textContent = `Téléchargement ${newCount + 1}/${toDownloadTotal - skippedDuplicates}... (${skippedDuplicates} déjà présents, ignorés)`;
+      statusEl.textContent = t("statusDownloadProgress", newCount + 1, toDownloadTotal - skippedDuplicates, skippedDuplicates);
 
       const ok = await downloadFile(entry.url, `${siteFolder}/${relPath}`);
       if (ok) {
@@ -434,7 +601,7 @@ async function downloadSelected() {
           relPath,
           name,
           isImage: category === "images",
-          icon: category === "videos" ? "🎬" : category === "pdfs" ? "📄" : entry.provider === "dropbox" ? "📦" : "🗂️",
+          icon: category === "videos" ? "🎬" : category === "pdfs" ? "📄" : entry.provider === "dropbox" ? "📦" : entry.provider === "vk" ? "📎" : "🗂️",
         });
       }
     }
@@ -450,6 +617,6 @@ async function downloadSelected() {
   await downloadFile(indexUrl, `${siteFolder}/index.html`, { conflictAction: "overwrite" });
 
   downloadBtn.disabled = false;
-  const skipNote = skippedDuplicates > 0 ? ` (${skippedDuplicates} déjà présents, ignorés)` : "";
-  statusEl.textContent = `${newCount} nouveau(x) fichier(s) téléchargé(s) dans "${siteFolder}/"${skipNote}. index.html mis à jour et consolidé.`;
+  const skipNote = skippedDuplicates > 0 ? t("skipNote", skippedDuplicates) : "";
+  statusEl.textContent = t("statusDownloadDone", newCount, siteFolder, skipNote);
 }
