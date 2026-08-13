@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Media Downloader</title>
+<style>
+  body {
+    width: 380px;
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    padding: 12px;
+    color: #1a1a1a;
+  }
+  h1 {
+    font-size: 15px;
+    margin: 0 0 10px;
+  }
+  #scanBtn, #downloadBtn {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+  #scanBtn:hover, #downloadBtn:hover { background: #1d4ed8; }
+  #downloadBtn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .tab {
+    flex: 1;
+    padding: 6px;
+    text-align: center;
+    font-size: 12px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    cursor: pointer;
+    user-select: none;
+  }
+  .tab.active { background: #2563eb; color: white; }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+  .toolbar a { color: #2563eb; cursor: pointer; text-decoration: none; }
+
+  #list {
+    max-height: 260px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 4px;
+  }
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    font-size: 11px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .item:last-child { border-bottom: none; }
+  .item img.thumb {
+    width: 28px;
+    height: 28px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: #f1f5f9;
+    flex-shrink: 0;
+  }
+  .item .url {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #status {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 8px;
+    text-align: center;
+  }
+  .empty {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 12px;
+    padding: 20px 0;
+  }
+</style>
+</head>
+<body>
+  <h1>Media Downloader</h1>
+  <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:#475569; margin-bottom:8px;">
+    <input type="checkbox" id="autoScroll" />
+    Défilement automatique (pages à chargement infini, ex. Facebook)
+  </label>
+  <button id="scanBtn">Scanner la page</button>
+
+  <div id="scrollControls" style="display:none; gap:6px; margin-bottom:8px;">
+    <button id="pauseBtn" style="flex:1; padding:6px; border:none; border-radius:6px; background:#f59e0b; color:white; font-size:12px; cursor:pointer;">⏸ Pause</button>
+    <button id="stopBtn" style="flex:1; padding:6px; border:none; border-radius:6px; background:#dc2626; color:white; font-size:12px; cursor:pointer;">⏹ Arrêter</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-type="images">Images (<span id="countImages">0</span>)</div>
+    <div class="tab" data-type="videos">Vidéos (<span id="countVideos">0</span>)</div>
+    <div class="tab" data-type="pdfs">PDFs (<span id="countPdfs">0</span>)</div>
+    <div class="tab" data-type="drive">Cloud (<span id="countDrive">0</span>)</div>
+  </div>
+
+  <div class="toolbar">
+    <a id="selectAll">Tout sélectionner</a>
+    <a id="selectNone">Tout désélectionner</a>
+  </div>
+
+  <div id="imageFilterRow" style="display:flex; align-items:center; gap:6px; font-size:11px; color:#475569; margin-bottom:6px;">
+    <label for="minImageSize">Taille min. images (px) :</label>
+    <input type="number" id="minImageSize" min="0" step="10" value="0" style="width:60px; padding:2px 4px; border:1px solid #e2e8f0; border-radius:4px; font-size:11px;">
+    <span style="color:#94a3b8;">(0 = désactivé)</span>
+  </div>
+
+  <div id="list"><div class="empty">Clique sur « Scanner la page » pour commencer.</div></div>
+
+  <button id="downloadBtn" disabled>Télécharger la sélection</button>
+  <div style="text-align:center; margin-top:4px;">
+    <a id="resetHistory" style="font-size:10px; color:#94a3b8; cursor:pointer; text-decoration:underline;">Oublier l'historique de ce site (repartir de zéro)</a>
+  </div>
+  <div id="status"></div>
+  <div id="versionInfo" style="text-align:center; font-size:10px; color:#cbd5e1; margin-top:10px;"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
