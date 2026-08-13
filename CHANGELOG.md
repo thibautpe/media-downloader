@@ -7,6 +7,23 @@ Ce projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (`MAJEU
 
 La version actuelle est visible en bas du popup, et dans `manifest.json` (`version`).
 
+## [1.14.1]
+### Ajouté
+- `.github/copilot-instructions.md` : instructions globales pour GitHub Copilot (versionnage automatique, i18n FR/EN, mise à jour de la documentation, conventions de code, tests). Aucun changement de comportement, documentation uniquement.
+
+## [1.14.0]
+### Ajouté
+- L'onglet « PDFs » devient **« Documents »** et détecte désormais aussi `.txt`, `.doc`/`.docx`, `.xls`/`.xlsx`, `.ppt`/`.pptx`, `.gpx` et `.gp5` (Guitar Pro), en plus des `.pdf`.
+- Icône différenciée par type de fichier dans la liste et dans `index.html` (📄 PDF, 📝 texte, 📃 Word, 📊 Excel, 📽️ PowerPoint, 🗺️ GPX, 🎸 GP5).
+### Modifié
+- Le sous-dossier de téléchargement pour cette catégorie passe de `pdfs/` à `documents/`, pour refléter la diversité des types désormais gérés.
+### Notes
+- Si tu avais déjà téléchargé des PDFs avec une version antérieure, ces anciens fichiers restent dans `pdfs/` (les liens dans leur `index.html` d'origine restent valides) ; seuls les nouveaux téléchargements iront dans `documents/`. Pas d'action nécessaire, juste une note pour éviter la surprise si tu regardes le dossier sur le disque.
+
+## [1.13.1]
+### Ajouté
+- `COMPATIBILITE.md` : tableau détaillé de ce qui est détecté par plateforme (Drive, Dropbox, VK, Facebook, règles génériques, dépliage « Voir plus » multilingue) et de ce qui ne l'est pas encore. Aucun changement de comportement, documentation uniquement.
+
 ## [1.13.0]
 ### Ajouté
 - Support de VK (`vk.com`, `vk.ru`, y compris les versions mobiles `m.vk.*`) : les liens vers des documents (`/doc<owner_id>_<doc_id>`, typiquement des PDFs de partitions, tutoriels, etc. dans les sujets de forum) sont détectés et ajoutés à l'onglet Cloud avec une icône dédiée (📎).

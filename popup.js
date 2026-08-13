@@ -9,7 +9,7 @@ const translations = {
     stopBtn: "⏹ Arrêter",
     tabImages: "Images",
     tabVideos: "Vidéos",
-    tabPdfs: "PDFs",
+    tabPdfs: "Documents",
     tabDrive: "Cloud",
     selectAll: "Tout sélectionner",
     selectNone: "Tout désélectionner",
@@ -25,9 +25,9 @@ const translations = {
     statusScanPrep: "Préparation du scan...",
     statusScanError: "Impossible de scanner cette page (page protégée par le navigateur ?)",
     statusStopping: "Arrêt en cours... (les résultats déjà trouvés seront affichés)",
-    statusPaused: (counts) => `⏸ En pause — ${counts.images} images, ${counts.videos} vidéos, ${counts.pdfs} PDFs, ${counts.drive} Cloud trouvés jusqu'ici.`,
-    statusProgress: (ctx) => `Défilement ${ctx.idx}... ${ctx.images} images, ${ctx.videos} vidéos, ${ctx.pdfs} PDFs, ${ctx.drive} Cloud trouvés.`,
-    statusDone: (ctx) => `${ctx.prefix}Trouvé : ${ctx.images} images, ${ctx.videos} vidéos, ${ctx.pdfs} PDFs, ${ctx.drive} fichiers Cloud (Drive/Dropbox).`,
+    statusPaused: (i, v, p, d) => `⏸ En pause — ${i} images, ${v} vidéos, ${p} Documents, ${d} Cloud trouvés jusqu'ici.`,
+    statusProgress: (idx, i, v, p, d) => `Défilement ${idx}... ${i} images, ${v} vidéos, ${p} Documents, ${d} Cloud trouvés.`,
+    statusDone: (prefix, i, v, p, d) => `${prefix}Trouvé : ${i} images, ${v} vidéos, ${p} Documents, ${d} fichiers Cloud (Drive/Dropbox).`,
     stoppedPrefix: "Scan arrêté manuellement. ",
     statusCheckingHistory: (folder) => `Vérification de l'historique pour "${folder}/"...`,
     statusDownloadProgress: (n, total, skipped) => `Téléchargement ${n}/${total}... (${skipped} déjà présents, ignorés)`,
@@ -43,7 +43,7 @@ const translations = {
     indexNone: "Aucun fichier téléchargé.",
     defaultFilename: "fichier",
     defaultFolder: "site",
-    categoryTitles: { images: "🖼️ Images", videos: "🎬 Vidéos", pdfs: "📄 PDFs", drive: "☁️ Cloud (Drive / Dropbox)" },
+    categoryTitles: { images: "🖼️ Images", videos: "🎬 Vidéos", pdfs: "📄 Documents", drive: "☁️ Cloud (Drive / Dropbox)" },
     htmlLang: "fr",
     dateLocale: "fr-FR",
   },
@@ -56,7 +56,7 @@ const translations = {
     stopBtn: "⏹ Stop",
     tabImages: "Images",
     tabVideos: "Videos",
-    tabPdfs: "PDFs",
+    tabPdfs: "Documents",
     tabDrive: "Cloud",
     selectAll: "Select all",
     selectNone: "Deselect all",
@@ -72,9 +72,9 @@ const translations = {
     statusScanPrep: "Preparing scan...",
     statusScanError: "Couldn't scan this page (browser-protected page?)",
     statusStopping: "Stopping... (results found so far will be shown)",
-    statusPaused: (counts) => `⏸ Paused — ${counts.images} images, ${counts.videos} videos, ${counts.pdfs} PDFs, ${counts.drive} Cloud found so far.`,
-    statusProgress: (ctx) => `Scrolling ${ctx.idx}... ${ctx.images} images, ${ctx.videos} videos, ${ctx.pdfs} PDFs, ${ctx.drive} Cloud found.`,
-    statusDone: (ctx) => `${ctx.prefix}Found: ${ctx.images} images, ${ctx.videos} videos, ${ctx.pdfs} PDFs, ${ctx.drive} Cloud files (Drive/Dropbox).`,
+    statusPaused: (i, v, p, d) => `⏸ Paused — ${i} images, ${v} videos, ${p} Documents, ${d} Cloud found so far.`,
+    statusProgress: (idx, i, v, p, d) => `Scrolling ${idx}... ${i} images, ${v} videos, ${p} Documents, ${d} Cloud found.`,
+    statusDone: (prefix, i, v, p, d) => `${prefix}Found: ${i} images, ${v} videos, ${p} Documents, ${d} Cloud files (Drive/Dropbox).`,
     stoppedPrefix: "Scan stopped manually. ",
     statusCheckingHistory: (folder) => `Checking history for "${folder}/"...`,
     statusDownloadProgress: (n, total, skipped) => `Downloading ${n}/${total}... (${skipped} already present, skipped)`,
@@ -90,7 +90,7 @@ const translations = {
     indexNone: "No file downloaded.",
     defaultFilename: "file",
     defaultFolder: "site",
-    categoryTitles: { images: "🖼️ Images", videos: "🎬 Videos", pdfs: "📄 PDFs", drive: "☁️ Cloud (Drive / Dropbox)" },
+    categoryTitles: { images: "🖼️ Images", videos: "🎬 Videos", pdfs: "📄 Documents", drive: "☁️ Cloud (Drive / Dropbox)" },
     htmlLang: "en",
     dateLocale: "en-US",
   },
@@ -131,9 +131,7 @@ function applyStaticTranslations() {
   document.documentElement.lang = t("htmlLang");
 
   const initialEmptyEl = document.getElementById("initialEmpty");
-  if (initialEmptyEl) {
-    initialEmptyEl.textContent = t("initialEmpty");
-  }
+  if (initialEmptyEl) initialEmptyEl.textContent = t("initialEmpty");
 
   updateDownloadBtn();
 
@@ -194,9 +192,7 @@ document.getElementById("resetHistory").addEventListener("click", resetSiteHisto
 document.getElementById("selectAll").addEventListener("click", () => toggleAll(true));
 document.getElementById("selectNone").addEventListener("click", () => toggleAll(false));
 document.getElementById("minImageSize").addEventListener("input", () => {
-  if (currentTab === "images") {
-    renderList();
-  }
+  if (currentTab === "images") renderList();
 });
 pauseBtn.addEventListener("click", togglePause);
 stopBtn.addEventListener("click", stopScan);
@@ -212,9 +208,7 @@ document.querySelectorAll(".tab").forEach((tab) => {
 
 // Écoute les messages de progression / fin envoyés par le content script.
 chrome.runtime.onMessage.addListener((msg, sender) => {
-  if (sender.tab && activeTabId !== null && sender.tab.id !== activeTabId) {
-    return;
-  }
+  if (sender.tab && activeTabId !== null && sender.tab.id !== activeTabId) return;
 
   if (msg.type === "mediaDownloaderProgress") {
     media = msg.media;
@@ -229,8 +223,8 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
     }
 
     statusEl.textContent = msg.paused
-      ? t("statusPaused", { images: media.images.length, videos: media.videos.length, pdfs: media.pdfs.length, drive: media.drive.length })
-      : t("statusProgress", { idx: msg.scrollIndex, images: media.images.length, videos: media.videos.length, pdfs: media.pdfs.length, drive: media.drive.length });
+      ? t("statusPaused", media.images.length, media.videos.length, media.pdfs.length, media.drive.length)
+      : t("statusProgress", msg.scrollIndex, media.images.length, media.videos.length, media.pdfs.length, media.drive.length);
   } else if (msg.type === "mediaDownloaderDone") {
     media = msg.media;
     finishScan(msg.stopped);
@@ -275,18 +269,14 @@ async function startScan() {
 }
 
 function togglePause() {
-  if (!activeTabId) {
-    return;
-  }
+  if (!activeTabId) return;
   isPaused = !isPaused;
   chrome.tabs.sendMessage(activeTabId, { type: isPaused ? "mediaDownloaderPause" : "mediaDownloaderResume" });
   pauseBtn.textContent = isPaused ? t("resumeBtn") : t("pauseBtn");
 }
 
 function stopScan() {
-  if (!activeTabId) {
-    return;
-  }
+  if (!activeTabId) return;
   chrome.tabs.sendMessage(activeTabId, { type: "mediaDownloaderStop" });
   statusEl.textContent = t("statusStopping");
 }
@@ -299,20 +289,34 @@ function finishScan(wasStopped) {
   updateCounts();
 
   const prefix = wasStopped ? t("stoppedPrefix") : "";
-  statusEl.textContent = t("statusDone", { prefix, images: media.images.length, videos: media.videos.length, pdfs: media.pdfs.length, drive: media.drive.length });
+  statusEl.textContent = t("statusDone", prefix, media.images.length, media.videos.length, media.pdfs.length, media.drive.length);
   renderList();
+}
+
+const DOC_ICONS = {
+  pdf: "📄",
+  txt: "📝",
+  doc: "📃",
+  docx: "📃",
+  xls: "📊",
+  xlsx: "📊",
+  ppt: "📽️",
+  pptx: "📽️",
+  gpx: "🗺️",
+  gp5: "🎸",
+};
+
+function iconForDocEntry(entry) {
+  const ext = (entry.filename.split(".").pop() || "").toLowerCase();
+  return DOC_ICONS[ext] || "📄";
 }
 
 function passesImageSizeFilter(entry) {
   const threshold = parseInt(document.getElementById("minImageSize").value, 10) || 0;
-  if (threshold <= 0) {
-    return true;
-  }
+  if (threshold <= 0) return true;
   // Taille inconnue (image pas encore chargée au moment du scan, variante srcset...) :
   // on ne filtre pas par précaution, pour ne jamais masquer une vraie image par erreur.
-  if (!entry.width || !entry.height) {
-    return true;
-  }
+  if (!entry.width || !entry.height) return true;
   return entry.width >= threshold && entry.height >= threshold;
 }
 
@@ -391,7 +395,7 @@ function renderList() {
         row.appendChild(makeIcon("🎬"));
       }
     } else if (currentTab === "pdfs") {
-      row.appendChild(makeIcon("📄"));
+      row.appendChild(makeIcon(iconForDocEntry(entry)));
     } else if (currentTab === "drive") {
       row.appendChild(makeIcon(entry.provider === "dropbox" ? "📦" : entry.provider === "vk" ? "📎" : "🗂️"));
     }
@@ -463,12 +467,12 @@ async function resetSiteHistory() {
 const CATEGORY_FOLDERS = {
   images: "images",
   videos: "videos",
-  pdfs: "pdfs",
+  pdfs: "documents",
   drive: "cloud",
 };
 
 function sanitizeFilename(name) {
-  const cleaned = (name || t("defaultFilename")).replace(/[\\/:*?"<>|]/g, "_").trim();
+  const cleaned = (name || t("defaultFilename")).replace(/[\\/:*?"<>|\u0000-\u001F]/g, "_").trim();
   return cleaned.slice(0, 150) || t("defaultFilename");
 }
 
@@ -489,9 +493,7 @@ function buildIndexHtml(siteFolder, sourceUrl, downloadedByCategory) {
   const sections = Object.keys(CATEGORY_FOLDERS)
     .map((key) => {
       const items = downloadedByCategory[key] || [];
-      if (items.length === 0) {
-        return "";
-      }
+      if (items.length === 0) return "";
       const cards = items
         .map((it) => {
           const thumb = it.isImage
@@ -553,9 +555,7 @@ function downloadFile(url, filename, options = {}) {
 
 async function downloadSelected() {
   const total = Object.values(selected).reduce((sum, set) => sum + set.size, 0);
-  if (total === 0) {
-    return;
-  }
+  if (total === 0) return;
 
   downloadBtn.disabled = true;
 
@@ -619,7 +619,7 @@ async function downloadSelected() {
           relPath,
           name,
           isImage: category === "images",
-          icon: category === "videos" ? "🎬" : category === "pdfs" ? "📄" : entry.provider === "dropbox" ? "📦" : entry.provider === "vk" ? "📎" : "🗂️",
+          icon: category === "videos" ? "🎬" : category === "pdfs" ? iconForDocEntry(entry) : entry.provider === "dropbox" ? "📦" : entry.provider === "vk" ? "📎" : "🗂️",
         });
       }
     }

@@ -81,6 +81,10 @@ Si tu scannes et télécharges deux fois la même page (ex. après avoir fait d�
 
 **Limite à connaître** : la déduplication se fait sur l'URL exacte du fichier. Si un site change l'URL derrière une même image/vidéo/PDF (CDN avec URL tournante, lien Drive régénéré, etc.), l'extension le traitera comme un nouveau fichier — ça reste un doublon de contenu, difficile à détecter sans télécharger et comparer les fichiers eux-mêmes.
 
+## Compatibilité par site
+
+La liste détaillée de ce qui est détecté pour chaque plateforme (Google Drive, Dropbox, VK, Facebook...) et de ce qui ne l'est pas encore est dans [`COMPATIBILITE.md`](./COMPATIBILITE.md).
+
 ## Support de VK
 
 Les liens vers des documents VK (`vk.com/doc<owner_id>_<doc_id>`, `vk.ru/doc...`, versions mobiles `m.vk.com`/`m.vk.ru`) sont détectés et regroupés dans l'onglet **Cloud** avec l'icône 📎. C'est le format utilisé par VK pour les fichiers joints (PDFs, partitions, documents divers) dans les sujets de forum, messages et publications.
@@ -103,7 +107,7 @@ Téléchargements/
     │   ├── photo.jpg
     │   └── photo (2).jpg       ← suffixe auto en cas de doublon de nom
     ├── videos/
-    ├── pdfs/
+    ├── documents/               ← PDFs, .txt, Word, Excel, PowerPoint, .gpx, .gp5
     └── cloud/                  ← fichiers Drive et Dropbox
 ```
 
@@ -167,7 +171,10 @@ media-downloader/
 ├── popup.js        # Logique du popup : i18n, pilotage du scan, affichage, téléchargements
 ├── content.js      # Content script injecté dans la page : scan + défilement + pause/stop
 ├── _locales/       # Nom/description localisés (fr, en) pour chrome://extensions
+├── .github/
+│   └── copilot-instructions.md  # Conventions du projet pour GitHub Copilot
 ├── icons/          # Icônes de l'extension
 ├── CHANGELOG.md    # Historique des versions
+├── COMPATIBILITE.md # Détail de ce qui est détecté par plateforme
 └── README.md
 ```

@@ -16,10 +16,22 @@ Toutes les règles ci-dessous s'appliquent **en plus** des règles génériques 
 | Images (fond CSS) | `background-image: url(...)` sur tout élément visible à l'écran au moment du scan | Images | `scanOnce()` |
 | Vidéos | `<video src>` et `<video><source src></video>` | Vidéos | `scanOnce()` |
 | Vidéos (aperçu) | Attribut `poster` du `<video>`, utilisé comme miniature dans la liste | Vidéos | `scanOnce()` |
-| PDFs | `<a href>` dont l'URL se termine par `.pdf` (avant `?`/`#`/fin de chaîne) | PDFs | `scanOnce()` |
-| PDFs (intégrés) | `<embed src>` / `<object data>` pointant vers un `.pdf` | PDFs | `scanOnce()` |
+| Documents | `<a href>` dont l'URL se termine par `.pdf`, `.txt`, `.doc`, `.docx`, `.xls`, `.xlsx`, `.ppt`, `.pptx`, `.gpx` ou `.gp5` (avant `?`/`#`/fin de chaîne) | Documents | `scanOnce()` |
+| Documents (intégrés) | `<embed src>` / `<object data>` pointant vers une de ces extensions | Documents | `scanOnce()` |
 
 **Limite commune à toutes les images** : les pseudo-éléments `::before`/`::after` avec `background-image` ne sont pas détectés.
+
+### Icônes par type de document
+
+| Extension | Icône |
+|---|---|
+| `.pdf` | 📄 |
+| `.txt` | 📝 |
+| `.doc` / `.docx` | 📃 |
+| `.xls` / `.xlsx` | 📊 |
+| `.ppt` / `.pptx` | 📽️ |
+| `.gpx` | 🗺️ |
+| `.gp5` | 🎸 |
 
 ---
 
