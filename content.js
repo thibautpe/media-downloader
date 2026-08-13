@@ -55,7 +55,9 @@
     try {
       const u = new URL(url);
       const host = u.hostname.replace(/^www\./, "");
-      if (host !== "dropbox.com") return false;
+      if (host !== "dropbox.com") {
+        return false;
+      }
       // Liens de partage typiques : /s/..., /scl/fi/..., /sh/...
       // On exclut la page d'accueil, le login, etc. (chemin quasi vide)
       return u.pathname.length > 3;
@@ -80,7 +82,9 @@
     try {
       const u = new URL(url);
       const host = u.hostname.replace(/^m\./, "").replace(/^www\./, "");
-      if (host !== "vk.com" && host !== "vk.ru") return false;
+      if (host !== "vk.com" && host !== "vk.ru") {
+        return false;
+      }
       // Format des documents VK : /doc<owner_id, parfois négatif>_<doc_id>,
       // ex. /doc-15164027_679123456
       return /^\/doc-?\d+_\d+/.test(u.pathname);
@@ -115,12 +119,20 @@
         .trim()
         .toLowerCase();
 
-      if (!text || text.length > 40) return; // évite de matcher un gros bloc de texte contenant le mot par hasard
-      if (collapsePhrases.some((p) => text.includes(p))) return;
+      if (!text || text.length > 40) {
+        return; // évite de matcher un gros bloc de texte contenant le mot par hasard
+      }
+      if (collapsePhrases.some((p) => text.includes(p))) {
+        return;
+      }
 
       const isExpandLabel = expandPhrases.some((p) => text === p || text.endsWith(p));
-      if (!isExpandLabel) return;
-      if (el.offsetParent === null) return; // élément caché, on ignore
+      if (!isExpandLabel) {
+        return;
+      }
+      if (el.offsetParent === null) {
+        return; // élément caché, on ignore
+      }
 
       try {
         el.click();
@@ -160,7 +172,9 @@
           raw;
       }
       const url = toAbsolute(raw);
-      if (!url) return;
+      if (!url) {
+        return;
+      }
       // naturalWidth/Height = dimensions réelles du fichier (0 si pas encore chargé).
       // width/height = taille affichée à l'écran, utilisée en repli.
       recordImage(url, img.naturalWidth || img.width, img.naturalHeight || img.height);
@@ -169,7 +183,9 @@
     document.querySelectorAll("picture source[srcset], img[srcset]").forEach((el) => {
       el.srcset.split(",").forEach((part) => {
         const url = toAbsolute(part.trim().split(" ")[0]);
-        if (url && !images.has(url)) recordImage(url, 0, 0); // taille inconnue pour les variantes srcset
+        if (url && !images.has(url)) {
+          recordImage(url, 0, 0); // taille inconnue pour les variantes srcset
+        }
       });
     });
 
@@ -178,15 +194,21 @@
     // scan (rect non nul) pour limiter le coût de getComputedStyle sur les grosses pages.
     document.querySelectorAll("*").forEach((el) => {
       const rect = el.getBoundingClientRect();
-      if (rect.width < 1 || rect.height < 1) return;
+      if (rect.width < 1 || rect.height < 1) {
+        return;
+      }
 
       const bg = getComputedStyle(el).backgroundImage;
-      if (!bg || bg === "none") return;
+      if (!bg || bg === "none") {
+        return;
+      }
 
       const matches = bg.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/g);
       for (const m of matches) {
         const url = toAbsolute(m[1]);
-        if (url) recordImage(url, Math.round(rect.width), Math.round(rect.height));
+        if (url) {
+          recordImage(url, Math.round(rect.width), Math.round(rect.height));
+        }
       }
     });
 
@@ -196,14 +218,18 @@
         const url = toAbsolute(v.src);
         if (url) {
           videos.add(url);
-          if (poster) videoPosters[url] = poster;
+          if (poster) {
+            videoPosters[url] = poster;
+          }
         }
       }
       v.querySelectorAll("source[src]").forEach((s) => {
         const url = toAbsolute(s.src);
         if (url) {
           videos.add(url);
-          if (poster) videoPosters[url] = poster;
+          if (poster) {
+            videoPosters[url] = poster;
+          }
         }
       });
     });
@@ -211,7 +237,9 @@
     document.querySelectorAll("a[href]").forEach((a) => {
       const rawHref = a.getAttribute("href") || "";
       let url = toAbsolute(rawHref);
-      if (!url) return;
+      if (!url) {
+        return;
+      }
 
       url = unwrapFacebookRedirect(url); // récupère l'URL réelle si Facebook l'a enveloppée
 
@@ -253,7 +281,9 @@
     document.querySelectorAll("embed[src], object[data]").forEach((el) => {
       const src = el.getAttribute("src") || el.getAttribute("data");
       const url = toAbsolute(src);
-      if (url && /\.pdf(\?|#|$)/i.test(url)) pdfs.add(url);
+      if (url && /\.pdf(\?|#|$)/i.test(url)) {
+        pdfs.add(url);
+      }
     });
   }
 
@@ -301,9 +331,11 @@
   }
 
   async function runScan(options) {
-    if (state.running) return; // un scan est déjà en cours, on l'ignore
+    if (state.running) {
+      return; // un scan est déjà en cours, on l'ignore
+    }
 
-    const autoScroll = !!options.autoScroll;
+    const autoScroll = Boolean(options.autoScroll);
     const maxScrolls = options.maxScrolls || 40;
     const waitMs = options.waitMs || 700;
 
@@ -322,12 +354,16 @@
       let stableCount = 0;
 
       for (let i = 0; i < maxScrolls; i++) {
-        if (state.stopped) break;
+        if (state.stopped) {
+          break;
+        }
 
         while (state.paused && !state.stopped) {
           await sleep(200); // attente active légère tant que c'est en pause
         }
-        if (state.stopped) break;
+        if (state.stopped) {
+          break;
+        }
 
         window.scrollTo(0, document.body.scrollHeight);
         await sleep(waitMs);
@@ -340,7 +376,9 @@
         const newHeight = document.body.scrollHeight;
         if (newHeight === lastHeight) {
           stableCount++;
-          if (stableCount >= 3) break; // plus rien de nouveau ne charge
+          if (stableCount >= 3) {
+            break; // plus rien de nouveau ne charge
+          }
         } else {
           stableCount = 0;
         }
