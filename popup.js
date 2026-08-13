@@ -599,7 +599,21 @@ async function downloadSelected() {
 
   let siteFolder = t("defaultFolder");
   try {
-    siteFolder = sanitizeFolderName(new URL(activeTabUrl).hostname);
+    const urlObj = new URL(activeTabUrl);
+    const host = urlObj.hostname.replace(/^www\.|^m\./, "");
+    const hostPart = sanitizeFolderName(host);
+    let folder = hostPart || t("defaultFolder");
+
+    // Pour Facebook et VK, inclure le nom de la page/blog si disponible
+    const isSocial = /facebook|vk/.test(host);
+    if (isSocial && media && media.siteTitle) {
+      const blogPart = sanitizeFolderName(String(media.siteTitle).slice(0, 60));
+      if (blogPart) {
+        folder = `${hostPart}_${blogPart}`;
+      }
+    }
+
+    siteFolder = folder;
   } catch {
     /* URL absente ou invalide, on garde le nom par défaut */
   }

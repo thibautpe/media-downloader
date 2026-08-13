@@ -7,6 +7,11 @@ Ce projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (`MAJEU
 
 La version actuelle est visible en bas du popup, et dans `manifest.json` (`version`).
 
+## [1.15.0]
+### Ajouté
+- Lors des téléchargements depuis Facebook et VK, le dossier créé inclut désormais le nom de la page/blog (ex. `facebook.com_Mon%20Blog`). Améliore l'organisation quand on télécharge depuis plusieurs pages du même site.
+
+
 ## [1.14.1]
 ### Ajouté
 - `.github/copilot-instructions.md` : instructions globales pour GitHub Copilot (versionnage automatique, i18n FR/EN, mise à jour de la documentation, conventions de code, tests). Aucun changement de comportement, documentation uniquement.
