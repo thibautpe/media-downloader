@@ -28,7 +28,8 @@ jobs:
       - name: Create extension zip
         run: |
           mkdir -p release
-          zip -r release/media-downloader.zip . -x "node_modules/*" ".git/*" ".github/*" "release/*" "*.zip"
+          # Create a zip of tracked files to avoid packaging dev files
+          git archive -o release/media-downloader.zip HEAD
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
