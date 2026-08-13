@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compatibilité — Media Downloader</title>
+    <style>
+      :root {
+        --bg: #101827;
+        --panel: #162235;
+        --panel-alt: #1f2d3d;
+        --card: #f8fafc;
+        --muted: #64748b;
+        --text: #e2e8f0;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #38bdf8;
+        --border: rgba(148, 163, 184, 0.22);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+        color: var(--text);
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 20px 60px;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, rgba(59,130,246,0.22), rgba(34,197,94,0.15));
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px;
+        margin-bottom: 28px;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 3vw, 3rem);
+      }
+
+      .subtitle {
+        margin: 0;
+        color: #cbd5e1;
+        line-height: 1.6;
+        max-width: 850px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin: 26px 0 0;
+      }
+
+      .stat {
+        background: rgba(15, 23, 42, 0.75);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+      }
+
+      .stat .label {
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .stat .value {
+        margin-top: 8px;
+        font-size: 1.8rem;
+        font-weight: 700;
+      }
+
+      .stat.support .value { color: var(--success); }
+      .stat.warn .value { color: var(--warning); }
+      .stat.info .value { color: var(--info); }
+
+      section {
+        margin-top: 28px;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 16px;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+      }
+
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 1.1rem;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .tag.support { background: rgba(34,197,94,0.15); color: #a7f3d0; }
+      .tag.partial { background: rgba(245,158,11,0.15); color: #fcd34d; }
+      .tag.limit { background: rgba(239,68,68,0.12); color: #fca5a5; }
+
+      ul {
+        margin: 10px 0 0 18px;
+        padding: 0;
+        color: #dfe7f1;
+        line-height: 1.7;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(15, 23, 42, 0.64);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+
+      th {
+        background: rgba(30, 41, 59, 0.9);
+        color: #f8fafc;
+      }
+
+      tr:last-child td { border-bottom: none; }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 18px 0 8px;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #dbeafe;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .dot.green { background: var(--success); }
+      .dot.orange { background: var(--warning); }
+      .dot.red { background: var(--danger); }
+
+      .note {
+        margin-top: 18px;
+        background: rgba(56, 189, 248, 0.08);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 12px;
+        padding: 16px 18px;
+        color: #d9f4ff;
+      }
+
+      .small {
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+
+      @media (max-width: 640px) {
+        .page { padding: 20px 14px 40px; }
+        .hero { padding: 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <h1>Compatibilité — prise en charge</h1>
+        <p class="subtitle">
+          Synthèse du support actuel de l’extension : ce qui est détecté automatiquement,
+          quelles plateformes sont couvertes, et les limitations connues à ne pas attendre pour le moment.
+        </p>
+
+        <div class="stats">
+          <div class="stat support">
+            <div class="label">Support global</div>
+            <div class="value">Oui</div>
+          </div>
+          <div class="stat info">
+            <div class="label">Sites spécifiques</div>
+            <div class="value">3</div>
+          </div>
+          <div class="stat warn">
+            <div class="label">Limites connues</div>
+            <div class="value">6</div>
+          </div>
+        </div>
+      </header>
+
+      <section>
+        <h2 class="section-title">État général</h2>
+        <div class="legend">
+          <div class="legend-item"><span class="dot green"></span> Supporté</div>
+          <div class="legend-item"><span class="dot orange"></span> Partiellement supporté</div>
+          <div class="legend-item"><span class="dot red"></span> Non couvert</div>
+        </div>
+
+        <div class="cards">
+          <article class="card">
+            <div class="tag support">Supporté</div>
+            <h3>Images</h3>
+            <ul>
+              <li><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Crect width='12' height='12' fill='%2322c55e'/%3E%3C/svg%3E" alt="" style="width:12px;height:12px;vertical-align:middle;margin-right:6px;" /> <code>&lt;img src&gt;</code></li>
+              <li>Lazy-load via <code>data-src</code>, <code>data-original</code>, etc.</li>
+              <li><code>srcset</code>, <code>picture</code>, background CSS visibles</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag support">Supporté</div>
+            <h3>Vidéos</h3>
+            <ul>
+              <li><code>&lt;video src&gt;</code> et <code>&lt;source&gt;</code></li>
+              <li>Miniature <code>poster</code> récupérée</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag support">Supporté</div>
+            <h3>Documents</h3>
+            <ul>
+              <li>PDF, TXT, Office, GPX, GP5</li>
+              <li>Règle de détection sur <code>href</code> ou <code>embed/object</code></li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag support">Supporté</div>
+            <h3>Cloud links</h3>
+            <ul>
+              <li>Google Drive</li>
+              <li>Dropbox</li>
+              <li>VK</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="section-title">Règles génériques</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Détection</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Images</td>
+              <td><code>&lt;img src="..."&gt;</code></td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+            <tr>
+              <td>Images lazy-load</td>
+              <td><code>data-src</code>, <code>data-original</code>, <code>data-lazy-src</code>, <code>data-lazy</code></td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+            <tr>
+              <td>Images en variante</td>
+              <td><code>picture</code>, <code>srcset</code></td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+            <tr>
+              <td>Images CSS</td>
+              <td><code>background-image</code> sur éléments visibles</td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+            <tr>
+              <td>Vidéos</td>
+              <td><code>&lt;video src&gt;</code> et <code>&lt;source&gt;</code></td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+            <tr>
+              <td>Documents</td>
+              <td>.pdf, .txt, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .gpx, .gp5</td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 class="section-title">Plateformes spécifiques</h2>
+        <div class="cards">
+          <article class="card">
+            <div class="tag support">Supporté</div>
+            <h3>Google Drive</h3>
+            <ul>
+              <li>Formats <code>/file/d/{ID}/view</code>, <code>/open?id=... </code>, <code>/uc?...id=...</code></li>
+              <li>Conversion vers téléchargement direct</li>
+              <li>Condition : fichier public / partagé</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag support">Supporté</div>
+            <h3>Dropbox</h3>
+            <ul>
+              <li>Liens de partage classiques et <code>/scl/fi/...</code></li>
+              <li>Ajout de <code>dl=1</code> pour téléchargement direct</li>
+              <li>Condition : fichier public</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag support">Supporté</div>
+            <h3>VK</h3>
+            <ul>
+              <li>Documents <code>vk.com/doc{owner_id}_{doc_id}</code></li>
+              <li>Support des variantes mobiles et domaines <code>.ru</code></li>
+              <li>Gestion des identifiants négatifs de groupe</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag support">Supporté</div>
+            <h3>Facebook</h3>
+            <ul>
+              <li>Décodage des redirections <code>l.facebook.com/l.php?u=...</code></li>
+              <li>Dépliage automatique des blocs « Voir plus »</li>
+              <li>Défilement automatique des pages infinies</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="section-title">Dépliage des textes tronqués</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Langue</th>
+              <th>Phrases reconnues</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Français</td>
+              <td><code>voir plus</code></td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+            <tr>
+              <td>Anglais</td>
+              <td><code>see more</code>, <code>display more</code></td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+            <tr>
+              <td>Allemand</td>
+              <td><code>mehr anzeigen</code></td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+            <tr>
+              <td>Espagnol</td>
+              <td><code>ver más</code></td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+            <tr>
+              <td>Portugais</td>
+              <td><code>ver mais</code></td>
+              <td><span class="tag support">Oui</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 class="section-title">Non couvert à ce jour</h2>
+        <div class="cards">
+          <article class="card">
+            <div class="tag limit">Limite</div>
+            <h3>Streaming HLS</h3>
+            <ul>
+              <li>Flux fragmentés <code>.m3u8</code> non réassemblés</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag limit">Limite</div>
+            <h3>Vidéos VK</h3>
+            <ul>
+              <li>Lecteur non standard, pas détecté par balise HTML classique</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag limit">Limite</div>
+            <h3>Audio</h3>
+            <ul>
+              <li>VK, SoundCloud, contenu audio embarqué non géré</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag limit">Limite</div>
+            <h3>Contenus protégés</h3>
+            <ul>
+              <li>Drive/Dropbox privés, VK restreints ou authentifiés</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag limit">Limite</div>
+            <h3>Pseudo-éléments CSS</h3>
+            <ul>
+              <li><code>::before</code> / <code>::after</code> non détectés</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <div class="tag limit">Limite</div>
+            <h3>Autres services cloud</h3>
+            <ul>
+              <li>OneDrive, WeTransfer, Mega, etc. non spécialisés</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <div class="note">
+        <strong>Note :</strong> cette synthèse se base sur la compatibilité actuelle du projet et ne remplace pas le document technique détaillé dans <code>COMPATIBILITE.md</code>.
+      </div>
+    </div>
+  </body>
+</html>

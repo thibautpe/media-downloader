@@ -49,9 +49,9 @@ Ce qu'elle n'affecte **pas** :
 
 ## Version
 
-Le numéro de version courant est affiché en bas du popup, et visible aussi dans `chrome://extensions` sous le nom de l'extension. L'historique complet des changements est dans [`CHANGELOG.md`](./CHANGELOG.md).
+Le numéro de version courant est affiché en bas du popup, et visible aussi dans `chrome://extensions` sous le nom de l'extension. L'historique complet des changements est dans [`docs/CHANGELOG.md`](./docs/CHANGELOG.md).
 
-Pour publier une nouvelle version après une modification : incrémente le champ `version` dans `manifest.json` (format `MAJEUR.MINEUR.CORRECTIF`) et ajoute une entrée en tête de `CHANGELOG.md`.
+Pour publier une nouvelle version après une modification : incrémente le champ `version` dans `manifest.json` (format `MAJEUR.MINEUR.CORRECTIF`) et ajoute une entrée en tête de `docs/CHANGELOG.md`.
 
 ## Défilement automatique (pages à chargement infini)
 
@@ -83,7 +83,7 @@ Si tu scannes et télécharges deux fois la même page (ex. après avoir fait d�
 
 ## Compatibilité par site
 
-La liste détaillée de ce qui est détecté pour chaque plateforme (Google Drive, Dropbox, VK, Facebook...) et de ce qui ne l'est pas encore est dans [`COMPATIBILITE.md`](./COMPATIBILITE.md).
+La liste détaillée de ce qui est détecté pour chaque plateforme (Google Drive, Dropbox, VK, Facebook...) et de ce qui ne l'est pas encore est dans [`docs/COMPATIBILITE.md`](./docs/COMPATIBILITE.md).
 
 ## Support de VK
 
@@ -174,7 +174,10 @@ media-downloader/
 ├── .github/
 │   └── copilot-instructions.md  # Conventions du projet pour GitHub Copilot
 ├── icons/          # Icônes de l'extension
-├── CHANGELOG.md    # Historique des versions
-├── COMPATIBILITE.md # Détail de ce qui est détecté par plateforme
-└── README.md
+├── docs/
+│   ├── CHANGELOG.md    # Historique des versions
+│   ├── COMPATIBILITE.md # Détail de ce qui est détecté par plateforme
+│   └── compatibilite.html # synthèse visuelle de la compatibilité
+├── README.md       # Accueil du projet et usage général
+└── .gitignore
 ```
