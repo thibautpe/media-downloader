@@ -25,14 +25,21 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Create extension zip
+      - name: Create final extension zip
         run: |
-          mkdir -p release
-          # Create a zip of tracked files to avoid packaging dev files
-          git archive -o release/media-downloader.zip HEAD
+          mkdir -p dist
+          rsync -a \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.github' \
+            --exclude='dist' \
+            --exclude='release' \
+            . dist/
+          cd dist
+          zip -r ../media-downloader.zip .
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v7
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        if: github.event_name != 'pull_request'
         with:
-          name: media-downloader
-          path: release/media-downloader.zip
+          files: media-downloader.zip
