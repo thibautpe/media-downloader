@@ -606,10 +606,36 @@ async function downloadSelected() {
 
     // Pour Facebook et VK, inclure le nom de la page/blog si disponible
     const isSocial = /facebook|vk/.test(host);
-    if (isSocial && media && media.siteTitle) {
-      const blogPart = sanitizeFolderName(String(media.siteTitle).slice(0, 60));
-      if (blogPart) {
-        folder = `${hostPart}_${blogPart}`;
+    if (isSocial) {
+      // Si le content script n'a pas fourni le titre, tenter de le récupérer directement
+      if (!(media && media.siteTitle)) {
+        try {
+          const targetTabId = activeTabId || (await chrome.tabs.query({ active: true, currentWindow: true }))[0].id;
+          const results = await chrome.scripting.executeScript({
+            target: { tabId: targetTabId },
+            func: () => {
+              try {
+                const meta = document.querySelector('meta[property="og:site_name"]') || document.querySelector('meta[property="og:title"]') || document.querySelector('meta[name="twitter:title"]');
+                return (meta && meta.content) || document.title || location.hostname;
+              } catch (e) {
+                return document.title || location.hostname;
+              }
+            },
+          });
+          if (results && results.length > 0 && results[0].result) {
+            media = media || {};
+            media.siteTitle = String(results[0].result).slice(0, 120);
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      }
+
+      if (media && media.siteTitle) {
+        const blogPart = sanitizeFolderName(String(media.siteTitle).slice(0, 60));
+        if (blogPart) {
+          folder = `${hostPart}_${blogPart}`;
+        }
       }
     }
 
