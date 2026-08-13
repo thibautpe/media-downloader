@@ -705,12 +705,6 @@ async function downloadSelected() {
 
   await saveManifest(siteFolder, manifest);
 
-  // La page d'index est reconstruite à partir du manifeste complet (anciennes + nouvelles
-  // sessions confondues), donc toujours consolidée, et on force l'écrasement du fichier
-  // précédent pour ne jamais accumuler des index (1).html, index (2).html, etc.
-  const indexHtml = buildIndexHtml(siteFolder, activeTabUrl || "", manifest);
-  const indexUrl = "data:text/html;charset=utf-8," + encodeURIComponent(indexHtml);
-  await downloadFile(indexUrl, `${siteFolder}/index.html`, { conflictAction: "overwrite" });
 
   downloadBtn.disabled = false;
   const skipNote = skippedDuplicates > 0 ? t("skipNote", skippedDuplicates) : "";
