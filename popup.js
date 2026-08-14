@@ -666,7 +666,7 @@ async function resolveDownloadUrl(url) {
   return url;
 }
 
-async function openAndAttemptWeTransferDownload(url) {
+async function openAndAttemptWeTransferDownload(url, targetFolder = null) {
   try {
     // Direct policy for WeTransfer: do NOT attempt network downloads here.
     // Create a clickable shortcut file (.url) in Downloads pointing to the WeTransfer link.
@@ -676,7 +676,9 @@ async function openAndAttemptWeTransferDownload(url) {
       const blob = new Blob([content], { type: 'text/plain' });
       const o = URL.createObjectURL(blob);
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
-      const filename = `wetransfer-link-${ts}.url`;
+      // Save inside the site's download folder if provided, otherwise root Downloads
+      const safeFolder = targetFolder ? `${targetFolder}` : '';
+      const filename = safeFolder ? `${safeFolder}/wetransfer-link-${ts}.url` : `wetransfer-link-${ts}.url`;
       const created = await new Promise((resolve) => {
         chrome.downloads.download({ url: o, filename, saveAs: false }, (id) => {
           resolve(!(chrome.runtime.lastError || id === undefined));
@@ -816,10 +818,11 @@ async function downloadSelected() {
 
       if (!ok && isWeTransferUrl(entry.url)) {
         try {
-          // Try to open (or reuse) a single landing tab and auto-click its download control.
-          await openAndAttemptWeTransferDownload(entry.url);
+          // Create a clickable .url shortcut inside the site's download folder instead of opening tabs
+          const siteSubFolder = `${siteFolder}/${folder}`;
+          await openAndAttemptWeTransferDownload(entry.url, siteSubFolder);
         } catch {
-          // If anything fails, do not open additional tabs; user can retry manually.
+          /* ignore */
         }
       }
 
