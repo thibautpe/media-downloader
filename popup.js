@@ -681,23 +681,26 @@ async function openAndAttemptWeTransferDownload(url, targetFolder = null) {
       const filename = safeFolder ? `${safeFolder}/wetransfer-link-${ts}.url` : `wetransfer-link-${ts}.url`;
       const created = await new Promise((resolve) => {
         chrome.downloads.download({ url: o, filename, saveAs: false }, (id) => {
-          resolve(!(chrome.runtime.lastError || id === undefined));
+          resolve(id);
         });
       });
       setTimeout(() => URL.revokeObjectURL(o), 5000);
       if (created) {
         appendWeTransferLogs([`Saved clickable shortcut: ${filename}`]);
+        // return the relative path so caller can add it to the manifest
+        return filename;
       } else {
         appendWeTransferLogs([`Failed to save clickable shortcut for ${target}`]);
+        return null;
       }
     } catch (e) {
       appendWeTransferLogs([`Exception creating shortcut: ${e && e.message}`]);
     }
 
     // We do not open tabs here.
-    return false;
+    return null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -818,9 +821,22 @@ async function downloadSelected() {
 
       if (!ok && isWeTransferUrl(entry.url)) {
         try {
-          // Create a clickable .url shortcut inside the site's download folder instead of opening tabs
-          const siteSubFolder = `${siteFolder}/${folder}`;
-          await openAndAttemptWeTransferDownload(entry.url, siteSubFolder);
+          // Create a clickable HTML page in the site's folder (treat as PDF-equivalent)
+          const createdRel = await openAndAttemptWeTransferDownload(entry.url, folder);
+          if (createdRel) {
+            // record as a PDF-like entry
+            ok = true;
+            newCount++;
+            manifest.pdfs = manifest.pdfs || [];
+            const nameSaved = createdRel.split('/').pop();
+            manifest.pdfs.push({
+              sourceUrl: entry.url,
+              relPath: createdRel,
+              name: nameSaved,
+              isImage: false,
+              icon: iconForDocEntry({ filename: nameSaved }),
+            });
+          }
         } catch {
           /* ignore */
         }
