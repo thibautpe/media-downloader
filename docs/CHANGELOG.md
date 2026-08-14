@@ -7,6 +7,33 @@ Ce projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (`MAJEU
 
 La version actuelle est visible en bas du popup, et dans `manifest.json` (`version`).
 
+## [1.16.1]
+### Corrigé
+- Les liens WeTransfer courts qui redirigent vers une page de confirmation sont maintenant reconnus comme cas de téléchargement manuel : l'extension essaie d'abord la vraie URL de fichier, puis ouvre la page WeTransfer si le service exige une action utilisateur avant le téléchargement.
+### Notes
+- Le téléchargement direct reste impossible quand WeTransfer impose un écran de confirmation ou un défi anti-bot ; dans ce cas, l'ouverture de la page est le comportement fiable, sans faux positif de téléchargement bloqué.
+
+## [1.16.2]
+### Ajouté
+- Tentative automatique d'ouverture de la page WeTransfer et de clic sur le bouton de téléchargement : si le téléchargement peut être déclenché automatiquement, l'onglet est fermé après le démarrage du transfert.
+### Corrigé
+- Si l'automatisation échoue (page de confirmation, anti-bot), la page WeTransfer est ouverte pour que l'utilisateur complète l'action manuellement.
+
+## [1.17.0]
+### Ajouté
+- When a WeTransfer shortlink is selected, the extension now creates a small HTML file containing a clickable link saved inside the site's download folder instead of opening new tabs or attempting fragile automated downloads. This ensures the popup keeps focus and the user can open the WeTransfer page from their Downloads folder when needed.
+### Modifié
+- Cleanup: removed obsolete tab-reuse automation and simplified the WeTransfer flow to avoid background tab manipulation.
+
+
+## [1.16.0]
+### Ajouté
+- Support des liens WeTransfer courts (`we.tl/...`) et des redirections VK (`vk.com/away.php?to=...` / `vk.ru/away.php?to=...`) : l'extension décode la cible réelle avant d'analyser le lien et les ajoute à l'onglet Cloud.
+### Modifié
+- Les liens d'archive temporaires du type `we.tl` sont désormais reconnus comme téléchargement direct lorsqu'ils pointent vers un fichier public ; il n'est pas nécessaire d'ouvrir une page intermédiaire manuellement pour déclencher le téléchargement si la cible autorise le GET direct.
+### Notes
+- Certains shortlinks publics peuvent encore afficher une page de confirmation ou un défi anti-bot selon le service ; dans ce cas, l'utilisateur peut encore devoir valider une page de protection, mais le cas simple `vk.ru/away.php?to=https://we.tl/...` est maintenant supporté.
+
 ## [1.15.1]
 ### Modifié
 - Suppression de la génération automatique de `index.html` lors des téléchargements. L'extension n'écrit plus le fichier récapitulatif dans le dossier du site.

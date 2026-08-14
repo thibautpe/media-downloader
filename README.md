@@ -85,15 +85,15 @@ Si tu scannes et télécharges deux fois la même page (ex. après avoir fait d�
 
 La liste détaillée de ce qui est détecté pour chaque plateforme (Google Drive, Dropbox, VK, Facebook...) et de ce qui ne l'est pas encore est dans [`docs/COMPATIBILITE.md`](./docs/COMPATIBILITE.md).
 
-## Support de VK
+## Support de VK et WeTransfer
 
 Les liens vers des documents VK (`vk.com/doc<owner_id>_<doc_id>`, `vk.ru/doc...`, versions mobiles `m.vk.com`/`m.vk.ru`) sont détectés et regroupés dans l'onglet **Cloud** avec l'icône 📎. C'est le format utilisé par VK pour les fichiers joints (PDFs, partitions, documents divers) dans les sujets de forum, messages et publications.
 
-L'extension navigue directement vers l'URL du document pour le téléchargement (comme pour tout autre lien) — sur VK, cette URL sert généralement le fichier brut plutôt qu'une page de prévisualisation, donc ça fonctionne pour la majorité des cas sans traitement supplémentaire.
+L'extension détecte aussi les redirections VK du type `vk.ru/away.php?to=https%3A%2F%2Fwe.tl%2F...` : elle remonte vers le vrai lien cible avant de l'analyser, ce qui permet de récupérer les shortlinks WeTransfer publics directement dans l'onglet **Cloud**.
 
 La détection d'images (`<img>`) a aussi été élargie pour couvrir le **lazy-loading** (chargement différé au scroll), une technique très utilisée sur les versions mobiles de sites comme VK : si l'attribut `src` d'une image pointe encore vers un pixel transparent (le `src` réel n'est posé qu'au moment où l'image entre dans le viewport), l'extension regarde aussi `data-src`, `data-original`, `data-lazy-src` et `data-lazy`.
 
-**Limite connue** : les vidéos VK utilisent un lecteur personnalisé (pas une balise `<video>` standard) et ne sont pas détectées pour l'instant.
+**Limite connue** : les vidéos VK utilisent un lecteur personnalisé (pas une balise `<video>` standard) et ne sont pas détectées pour l'instant. Les shortlinks publics peuvent tout de même afficher une page de confirmation anti-bot si le service le demande.
 
 ## Organisation en dossiers + page d'index
 
