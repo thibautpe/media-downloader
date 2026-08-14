@@ -576,6 +576,96 @@ function buildIndexHtml(siteFolder, sourceUrl, downloadedByCategory) {
 </html>`;
 }
 
+function isWeTransferUrl(url) {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+    return host === "we.tl" || host === "wetransfer.com";
+  } catch {
+    return false;
+  }
+}
+
+async function resolveDownloadUrl(url) {
+  if (!isWeTransferUrl(url)) {
+    return url;
+  }
+
+  try {
+    const response = await fetch(url, { method: "GET", redirect: "follow", credentials: "omit" });
+    if (response && response.url) {
+      return response.url;
+    }
+  } catch {
+    // Certaines landing pages WeTransfer exigent une action utilisateur : on laisse le fallback
+    // du code de téléchargement gérer le cas manuellement.
+  }
+  return url;
+}
+
+async function openAndAttemptWeTransferDownload(url) {
+  try {
+    const created = await chrome.tabs.create({ url, active: true });
+    const tabId = created && created.id;
+    if (!tabId) return false;
+
+    // wait for load complete or timeout
+    await new Promise((res) => {
+      const onUpdated = (updatedTabId, changeInfo) => {
+        if (updatedTabId === tabId && changeInfo.status === "complete") {
+          chrome.tabs.onUpdated.removeListener(onUpdated);
+          res();
+        }
+      };
+      chrome.tabs.onUpdated.addListener(onUpdated);
+      setTimeout(() => {
+        try { chrome.tabs.onUpdated.removeListener(onUpdated); } catch {}
+        res();
+      }, 10000);
+    });
+
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        // Heuristiques pour le bouton/fichier WeTransfer
+        const selCandidates = [
+          'button[aria-label="Download"]',
+          'button[data-test="download-button"]',
+          'button[data-qa="download-button"]',
+          'a[href*="/downloads/"]',
+          'a[href*="/download/"]',
+          'a[download]'
+        ];
+        for (const sel of selCandidates) {
+          const el = document.querySelector(sel);
+          if (el) {
+            try { el.click(); return true; } catch {}
+          }
+        }
+
+        // fallback: try to find first anchor that triggers network download
+        const anchors = Array.from(document.querySelectorAll('a[href]'));
+        for (const a of anchors) {
+          if (/download|downloads|/i.test(a.href)) {
+            try { a.click(); return true; } catch {}
+          }
+        }
+        return false;
+      },
+    });
+
+    const clicked = Array.isArray(results) && results[0] && results[0].result;
+    if (clicked) {
+      // close tab after a short delay to let browser start the download
+      setTimeout(() => {
+        try { chrome.tabs.remove(tabId); } catch {}
+      }, 4000);
+    }
+    return Boolean(clicked);
+  } catch {
+    return false;
+  }
+}
+
 function downloadFile(url, filename, options = {}) {
   return new Promise((resolve) => {
     chrome.downloads.download({ url, filename, saveAs: false, conflictAction: options.conflictAction || "uniquify" }, (downloadId) => {
@@ -688,7 +778,23 @@ async function downloadSelected() {
       const relPath = `${folder}/${name}`;
       statusEl.textContent = t("statusDownloadProgress", newCount + 1, toDownloadTotal - skippedDuplicates, skippedDuplicates);
 
-      const ok = await downloadFile(entry.url, `${siteFolder}/${relPath}`);
+      const resolvedUrl = await resolveDownloadUrl(entry.url);
+      let ok = await downloadFile(resolvedUrl, `${siteFolder}/${relPath}`);
+
+      if (!ok && isWeTransferUrl(entry.url)) {
+        try {
+          // Try to open the landing page and auto-click its download control.
+          const clicked = await openAndAttemptWeTransferDownload(entry.url);
+          if (!clicked) {
+            // If auto-click failed, open the page for the user to intervene.
+            await chrome.tabs.create({ url: entry.url, active: true });
+          }
+        } catch {
+          // If anything fails, fall back to opening the page so the user can complete the download.
+          try { await chrome.tabs.create({ url: entry.url, active: true }); } catch {}
+        }
+      }
+
       if (ok) {
         newCount++;
         manifest[category] = manifest[category] || [];
