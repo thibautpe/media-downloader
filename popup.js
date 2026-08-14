@@ -176,15 +176,6 @@ let activeTabId = null;
 let activeTabUrl = null;
 let isPaused = false;
 
-// Tab management for WeTransfer automation: reuse a single visible tab for all attempts
-let weTransferTabId = null;
-if (chrome && chrome.tabs && chrome.tabs.onRemoved) {
-  chrome.tabs.onRemoved.addListener((removedId) => {
-    if (weTransferTabId && removedId === weTransferTabId) {
-      weTransferTabId = null;
-    }
-  });
-}
 // Sélection conservée par catégorie, même en changeant d'onglet dans le popup.
 const selected = { images: new Set(), videos: new Set(), pdfs: new Set(), drive: new Set() };
 
@@ -531,129 +522,58 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;");
 }
 
-// `buildIndexHtml` removed — function was unused after refactor that treats generated HTML links as documents.
-
-function isWeTransferUrl(url) {
-  try {
-    const host = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
-    return host === "we.tl" || host === "wetransfer.com";
-  } catch {
-    return false;
-  }
-}
-
-function appendWeTransferLogs(lines) {
-  try {
-    if (!lines || !lines.length) {
-      return;
-    }
-    const container = document.getElementById("weTransferLogs");
-    if (!container) {
-      return;
-    }
-    container.style.display = "block";
-    for (const l of lines) {
-      const div = document.createElement('div');
-      const ts = new Date().toLocaleTimeString();
-      div.textContent = `[${ts}] ${String(l)}`;
-      container.appendChild(div);
-    }
-    container.scrollTop = container.scrollHeight;
-  } catch (e) {
-    /* ignore */
-  }
-}
-
-async function exportWeTransferLogsToTxt() {
-  try {
-    const container = document.getElementById('weTransferLogs');
-    if (!container || !container.textContent.trim()) {
-      statusEl.textContent = 'Aucun log à exporter.';
-      return false;
-    }
-    const text = container.textContent.trim();
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `wetransfer-logs-${timestamp}.txt`;
-    const downloaded = await new Promise((resolve) => {
-      chrome.downloads.download({ url, filename, saveAs: false }, (id) => {
-        if (chrome.runtime.lastError || id === undefined) {
-          resolve(false);
-        } else {
-          resolve(true);
-        }
-      });
-    });
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-    statusEl.textContent = downloaded ? `Logs exportés : ${filename}` : 'Échec de l\'export des logs.';
-    return downloaded;
-  } catch (e) {
-    statusEl.textContent = 'Erreur lors de l\'export des logs.';
-    return false;
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('exportLogsBtn');
-  if (btn) {
-    btn.addEventListener('click', async () => { await exportWeTransferLogsToTxt(); });
-  }
-});
-
-async function resolveDownloadUrl(url) {
-  if (!isWeTransferUrl(url)) {
-    return url;
-  }
-
-  try {
-    const response = await fetch(url, { method: "GET", redirect: "follow", credentials: "omit" });
-    if (response && response.url) {
-      return response.url;
-    }
-  } catch {
-    // Certaines landing pages WeTransfer exigent une action utilisateur : on laisse le fallback
-    // du code de téléchargement gérer le cas manuellement.
-  }
-  return url;
-}
-
-async function openAndAttemptWeTransferDownload(url, targetFolder = null) {
-  try {
-    // Direct policy for WeTransfer: do NOT attempt network downloads here.
-    // Create a clickable shortcut file (.url) in Downloads pointing to the WeTransfer link.
-    try {
-      const target = url;
-      const content = `<!doctype html><html><head><meta charset="utf-8"><title>WeTransfer link</title></head><body style="font-family:Arial,Helvetica,sans-serif;padding:20px;"><h2>WeTransfer link</h2><p>Click the link below to open the download page:</p><p><a href="${target}" target="_blank" rel="noopener">Open WeTransfer page</a></p></body></html>`;
-      const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
-      const o = URL.createObjectURL(blob);
-      const ts = new Date().toISOString().replace(/[:.]/g, '-');
-      // Save inside the site's download folder if provided, otherwise root Downloads
-      const safeFolder = targetFolder ? `${targetFolder}` : '';
-      const filename = safeFolder ? `${safeFolder}/wetransfer-link-${ts}.html` : `wetransfer-link-${ts}.html`;
-      const created = await new Promise((resolve) => {
-        chrome.downloads.download({ url: o, filename, saveAs: false }, (id) => {
-          resolve(id);
-        });
-      });
-      setTimeout(() => URL.revokeObjectURL(o), 5000);
-      if (created) {
-        appendWeTransferLogs([`Saved HTML link page: ${filename}`]);
-        // return the relative path so caller can add it to the manifest
-        return filename;
-      } else {
-        appendWeTransferLogs([`Failed to save HTML link page for ${target}`]);
-        return null;
+function buildIndexHtml(siteFolder, sourceUrl, downloadedByCategory) {
+  const categoryTitles = t("categoryTitles");
+  const sections = Object.keys(CATEGORY_FOLDERS)
+    .map((key) => {
+      const items = downloadedByCategory[key] || [];
+      if (items.length === 0) {
+        return "";
       }
-    } catch (e) {
-      appendWeTransferLogs([`Exception creating shortcut: ${e && e.message}`]);
-    }
+      const cards = items
+        .map((it) => {
+          const thumb = it.isImage
+            ? `<img src="${escapeHtml(it.relPath)}" alt="${escapeHtml(it.name)}" loading="lazy">`
+            : `<div class="icon">${it.icon}</div>`;
+          return `<div class="card">
+            <a href="${escapeHtml(it.relPath)}" target="_blank" rel="noopener">${thumb}</a>
+            <div class="name" title="${escapeHtml(it.name)}">${escapeHtml(it.name)}</div>
+          </div>`;
+        })
+        .join("\n");
+      return `<section>
+        <h2>${categoryTitles[key]} <span class="count">(${items.length})</span></h2>
+        <div class="grid">${cards}</div>
+      </section>`;
+    })
+    .join("\n");
 
-    // We do not open tabs here.
-    return null;
-  } catch {
-    return null;
-  }
+  return `<!DOCTYPE html>
+<html lang="${t("htmlLang")}">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(t("indexTitle", siteFolder))}</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .meta { font-size: 12px; color: #64748b; margin-bottom: 24px; word-break: break-all; }
+  .meta a { color: #2563eb; }
+  h2 { font-size: 15px; margin: 28px 0 12px; }
+  .count { color: #94a3b8; font-weight: normal; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; text-align: center; }
+  .card a { text-decoration: none; color: inherit; display: block; }
+  .card img { width: 100%; height: 100px; object-fit: cover; display: block; background: #f1f5f9; }
+  .card .icon { width: 100%; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 32px; background: #f1f5f9; }
+  .card .name { font-size: 11px; padding: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>
+</head>
+<body>
+  <h1>${t("indexHeading")}</h1>
+  <p class="meta">${t("indexSource")} <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(sourceUrl)}</a><br>${t("indexGenerated")} ${new Date().toLocaleString(t("dateLocale"))}</p>
+  ${sections || `<p>${t("indexNone")}</p>`}
+</body>
+</html>`;
 }
 
 function downloadFile(url, filename, options = {}) {
@@ -768,33 +688,7 @@ async function downloadSelected() {
       const relPath = `${folder}/${name}`;
       statusEl.textContent = t("statusDownloadProgress", newCount + 1, toDownloadTotal - skippedDuplicates, skippedDuplicates);
 
-      const resolvedUrl = await resolveDownloadUrl(entry.url);
-      let ok = await downloadFile(resolvedUrl, `${siteFolder}/${relPath}`);
-
-      if (!ok && isWeTransferUrl(entry.url)) {
-        try {
-          // Create a clickable HTML page in the site's folder (treat as PDF-equivalent)
-          const siteSubFolder = `${siteFolder}/${folder}`;
-          const createdRel = await openAndAttemptWeTransferDownload(entry.url, siteSubFolder);
-          if (createdRel) {
-            // record as a PDF-like entry
-            ok = true;
-            newCount++;
-            manifest.pdfs = manifest.pdfs || [];
-            const nameSaved = createdRel.split('/').pop();
-            manifest.pdfs.push({
-              sourceUrl: entry.url,
-              relPath: createdRel,
-              name: nameSaved,
-              isImage: false,
-              icon: iconForDocEntry({ filename: nameSaved }),
-            });
-          }
-        } catch {
-          /* ignore */
-        }
-      }
-
+      const ok = await downloadFile(entry.url, `${siteFolder}/${relPath}`);
       if (ok) {
         newCount++;
         manifest[category] = manifest[category] || [];

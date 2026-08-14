@@ -67,24 +67,11 @@ Toutes les règles ci-dessous s'appliquent **en plus** des règles génériques 
 | `vk.com/doc{owner_id}_{doc_id}` | `https://vk.com/doc-15164027_679123456` |
 | `vk.ru/doc{owner_id}_{doc_id}` | idem sur le domaine `.ru` |
 | `m.vk.com/doc...`, `m.vk.ru/doc...` | versions mobiles (préfixe `m.` retiré avant comparaison) |
-| `vk.com/away.php?to=...` / `vk.ru/away.php?to=...` | `https://vk.ru/away.php?to=https%3A%2F%2Fwe.tl%2Ft-Rb7J9BWcufPJmWcb&utf=1` |
 
 - `owner_id` peut être négatif (documents postés par un groupe/communauté plutôt qu'un compte personnel) — géré par le motif `-?\d+`.
-- Les redirections `away.php?to=` sont décodées avant analyse afin de retrouver l'URL cible réelle (ex. WeTransfer, Dropbox, PDF public, etc.).
 - Utilisé tel quel comme URL de téléchargement (VK sert généralement le fichier brut à cette adresse).
 - Affiché dans l'onglet **Cloud**, icône 📎.
 - **Non couvert** : les vidéos VK (lecteur personnalisé, pas de balise `<video>` standard), l'audio VK.
-
-## WeTransfer
-
-| Format d'URL détecté | Exemple |
-|---|---|
-| `we.tl/...` | `https://we.tl/t-Rb7J9BWcufPJmWcb` |
-| `wetransfer.com/...` | `https://wetransfer.com/...` |
-
-- Détecté comme lien de téléchargement direct dans l'onglet **Cloud**.
-- L'URL est conservée telle quelle ; si le service délivre un fichier public, le navigateur peut le récupérer directement via `chrome.downloads` sans passer par la page d'atterrissage de l'utilisateur.
-- **Limite** : si le shortlink est protégé ou redirige vers une page de confirmation anti-bot, l'utilisateur peut devoir valider une étape supplémentaire.
 
 ## Facebook
 
