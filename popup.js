@@ -176,6 +176,15 @@ let activeTabId = null;
 let activeTabUrl = null;
 let isPaused = false;
 
+// Tab management for WeTransfer automation: reuse a single visible tab for all attempts
+let weTransferTabId = null;
+if (chrome && chrome.tabs && chrome.tabs.onRemoved) {
+  chrome.tabs.onRemoved.addListener((removedId) => {
+    if (weTransferTabId && removedId === weTransferTabId) {
+      weTransferTabId = null;
+    }
+  });
+}
 // Sélection conservée par catégorie, même en changeant d'onglet dans le popup.
 const selected = { images: new Set(), videos: new Set(), pdfs: new Set(), drive: new Set() };
 
@@ -604,9 +613,21 @@ async function resolveDownloadUrl(url) {
 
 async function openAndAttemptWeTransferDownload(url) {
   try {
-    const created = await chrome.tabs.create({ url, active: true });
-    const tabId = created && created.id;
-    if (!tabId) return false;
+    let tabId = weTransferTabId;
+    if (tabId) {
+      try {
+        await chrome.tabs.update(tabId, { url, active: true });
+      } catch {
+        tabId = null;
+        weTransferTabId = null;
+      }
+    }
+    if (!tabId) {
+      const created = await chrome.tabs.create({ url, active: true });
+      tabId = created && created.id;
+      if (!tabId) return false;
+      weTransferTabId = tabId;
+    }
 
     // wait for load complete or timeout
     await new Promise((res) => {
@@ -658,7 +679,11 @@ async function openAndAttemptWeTransferDownload(url) {
       // close tab after a short delay to let browser start the download
       setTimeout(() => {
         try { chrome.tabs.remove(tabId); } catch {}
+        if (weTransferTabId === tabId) weTransferTabId = null;
       }, 4000);
+    } else {
+      // keep tab open and reuse it for subsequent attempts
+      weTransferTabId = tabId;
     }
     return Boolean(clicked);
   } catch {
@@ -783,15 +808,10 @@ async function downloadSelected() {
 
       if (!ok && isWeTransferUrl(entry.url)) {
         try {
-          // Try to open the landing page and auto-click its download control.
-          const clicked = await openAndAttemptWeTransferDownload(entry.url);
-          if (!clicked) {
-            // If auto-click failed, open the page for the user to intervene.
-            await chrome.tabs.create({ url: entry.url, active: true });
-          }
+          // Try to open (or reuse) a single landing tab and auto-click its download control.
+          await openAndAttemptWeTransferDownload(entry.url);
         } catch {
-          // If anything fails, fall back to opening the page so the user can complete the download.
-          try { await chrome.tabs.create({ url: entry.url, active: true }); } catch {}
+          // If anything fails, do not open additional tabs; user can retry manually.
         }
       }
 
