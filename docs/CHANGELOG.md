@@ -7,6 +7,14 @@ Ce projet suit le [versionnage sémantique](https://semver.org/lang/fr/) (`MAJEU
 
 La version actuelle est visible en bas du popup, et dans `manifest.json` (`version`).
 
+## [1.16.0]
+### Ajouté
+- Support des liens WeTransfer courts (`we.tl/...`) et des redirections VK (`vk.com/away.php?to=...` / `vk.ru/away.php?to=...`) : l'extension décode la cible réelle avant d'analyser le lien et les ajoute à l'onglet Cloud.
+### Modifié
+- Les liens d'archive temporaires du type `we.tl` sont désormais reconnus comme téléchargement direct lorsqu'ils pointent vers un fichier public ; il n'est pas nécessaire d'ouvrir une page intermédiaire manuellement pour déclencher le téléchargement si la cible autorise le GET direct.
+### Notes
+- Certains shortlinks publics peuvent encore afficher une page de confirmation ou un défi anti-bot selon le service ; dans ce cas, l'utilisateur peut encore devoir valider une page de protection, mais le cas simple `vk.ru/away.php?to=https://we.tl/...` est maintenant supporté.
+
 ## [1.15.1]
 ### Modifié
 - Suppression de la génération automatique de `index.html` lors des téléchargements. L'extension n'écrit plus le fichier récapitulatif dans le dossier du site.

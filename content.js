@@ -17,6 +17,7 @@
   const driveFiles = new Map(); // id -> label
   const dropboxFiles = new Map(); // url (sans dl forcé) -> label
   const vkFiles = new Map(); // url -> label
+  const weTransferFiles = new Map(); // url -> label
 
   const toAbsolute = (url) => {
     try {
@@ -44,6 +45,22 @@
       const host = u.hostname.replace(/^www\./, "");
       if ((host === "l.facebook.com" || host === "lm.facebook.com") && u.searchParams.has("u")) {
         return decodeURIComponent(u.searchParams.get("u"));
+      }
+    } catch {
+      /* URL invalide, on renvoie l'originale */
+    }
+    return url;
+  }
+
+  function unwrapVkAwayRedirect(url) {
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace(/^m\./, "").replace(/^www\./, "");
+      if ((host === "vk.com" || host === "vk.ru") && u.pathname === "/away.php") {
+        const target = u.searchParams.get("to") || u.searchParams.get("u") || u.searchParams.get("url");
+        if (target) {
+          return decodeURIComponent(target);
+        }
       }
     } catch {
       /* URL invalide, on renvoie l'originale */
@@ -88,6 +105,16 @@
       // Format des documents VK : /doc<owner_id, parfois négatif>_<doc_id>,
       // ex. /doc-15164027_679123456
       return /^\/doc-?\d+_\d+/.test(u.pathname);
+    } catch {
+      return false;
+    }
+  }
+
+  function isWeTransferLink(url) {
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace(/^www\./, "");
+      return host === "we.tl" || host === "wetransfer.com";
     } catch {
       return false;
     }
@@ -246,6 +273,7 @@
       }
 
       url = unwrapFacebookRedirect(url); // récupère l'URL réelle si Facebook l'a enveloppée
+      url = unwrapVkAwayRedirect(url); // VK envoie parfois vers une redirection /away.php?to=...
 
       if (DOC_EXTENSIONS_RE.test(url)) {
         pdfs.add(url);
@@ -279,6 +307,14 @@
           const label = (a.textContent || "").trim();
           vkFiles.set(url, label || null);
         }
+        return;
+      }
+
+      if (isWeTransferLink(url)) {
+        if (!weTransferFiles.has(url)) {
+          const label = (a.textContent || "").trim();
+          weTransferFiles.set(url, label || null);
+        }
       }
     });
 
@@ -311,6 +347,12 @@
       filename: label || filenameFromUrl(url),
       provider: "vk",
     }));
+    const weTransferEntries = Array.from(weTransferFiles.entries()).map(([url, label]) => ({
+      url,
+      viewUrl: url,
+      filename: label || filenameFromUrl(url),
+      provider: "wetransfer",
+    }));
     return {
       images: Array.from(images.entries()).map(([url, dim]) => ({
         ...toEntry(url),
@@ -319,7 +361,7 @@
       })),
       videos: Array.from(videos).map((url) => ({ ...toEntry(url), poster: videoPosters[url] || null })),
       pdfs: Array.from(pdfs).map(toEntry),
-      drive: [...driveEntries, ...dropboxEntries, ...vkEntries],
+      drive: [...driveEntries, ...dropboxEntries, ...vkEntries, ...weTransferEntries],
     };
   }
 
