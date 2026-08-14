@@ -612,6 +612,43 @@ function appendWeTransferLogs(lines) {
   }
 }
 
+async function exportWeTransferLogsToTxt() {
+  try {
+    const container = document.getElementById('weTransferLogs');
+    if (!container || !container.textContent.trim()) {
+      statusEl.textContent = 'Aucun log à exporter.';
+      return false;
+    }
+    const text = container.textContent.trim();
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `wetransfer-logs-${timestamp}.txt`;
+    const downloaded = await new Promise((resolve) => {
+      chrome.downloads.download({ url, filename, saveAs: false }, (id) => {
+        if (chrome.runtime.lastError || id === undefined) {
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    statusEl.textContent = downloaded ? `Logs exportés : ${filename}` : 'Échec de l\'export des logs.';
+    return downloaded;
+  } catch (e) {
+    statusEl.textContent = 'Erreur lors de l\'export des logs.';
+    return false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('exportLogsBtn');
+  if (btn) {
+    btn.addEventListener('click', async () => { await exportWeTransferLogsToTxt(); });
+  }
+});
+
 async function resolveDownloadUrl(url) {
   if (!isWeTransferUrl(url)) {
     return url;

@@ -144,7 +144,10 @@
     <a id="resetHistory" style="font-size:10px; color:#94a3b8; cursor:pointer; text-decoration:underline;">Oublier l'historique de ce site (repartir de zéro)</a>
   </div>
   <div id="status"></div>
-  <div id="weTransferLogs" style="font-family:monospace; font-size:11px; color:#0f172a; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:6px; margin-top:8px; max-height:120px; overflow:auto; display:none;"></div>
+  <div style="display:flex; gap:6px; align-items:center; margin-top:8px;">
+    <div id="weTransferLogs" style="flex:1; font-family:monospace; font-size:11px; color:#0f172a; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:6px; max-height:120px; overflow:auto; display:none;"></div>
+    <button id="exportLogsBtn" style="padding:6px 8px; font-size:11px; border-radius:6px; border:none; background:#10b981; color:white; cursor:pointer; display:none;">Exporter</button>
+  </div>
   <div id="versionInfo" style="text-align:center; font-size:10px; color:#cbd5e1; margin-top:10px;"></div>
 
   <script src="popup.js"></script>
