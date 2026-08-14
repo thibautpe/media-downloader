@@ -19,6 +19,12 @@ La version actuelle est visible en bas du popup, et dans `manifest.json` (`versi
 ### Corrigé
 - Si l'automatisation échoue (page de confirmation, anti-bot), la page WeTransfer est ouverte pour que l'utilisateur complète l'action manuellement.
 
+## [1.17.0]
+### Ajouté
+- When a WeTransfer shortlink is selected, the extension now creates a small HTML file containing a clickable link saved inside the site's download folder instead of opening new tabs or attempting fragile automated downloads. This ensures the popup keeps focus and the user can open the WeTransfer page from their Downloads folder when needed.
+### Modifié
+- Cleanup: removed obsolete tab-reuse automation and simplified the WeTransfer flow to avoid background tab manipulation.
+
 
 ## [1.16.0]
 ### Ajouté
