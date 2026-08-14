@@ -531,59 +531,7 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;");
 }
 
-function buildIndexHtml(siteFolder, sourceUrl, downloadedByCategory) {
-  const categoryTitles = t("categoryTitles");
-  const sections = Object.keys(CATEGORY_FOLDERS)
-    .map((key) => {
-      const items = downloadedByCategory[key] || [];
-      if (items.length === 0) {
-        return "";
-      }
-      const cards = items
-        .map((it) => {
-          const thumb = it.isImage
-            ? `<img src="${escapeHtml(it.relPath)}" alt="${escapeHtml(it.name)}" loading="lazy">`
-            : `<div class="icon">${it.icon}</div>`;
-          return `<div class="card">
-            <a href="${escapeHtml(it.relPath)}" target="_blank" rel="noopener">${thumb}</a>
-            <div class="name" title="${escapeHtml(it.name)}">${escapeHtml(it.name)}</div>
-          </div>`;
-        })
-        .join("\n");
-      return `<section>
-        <h2>${categoryTitles[key]} <span class="count">(${items.length})</span></h2>
-        <div class="grid">${cards}</div>
-      </section>`;
-    })
-    .join("\n");
-
-  return `<!DOCTYPE html>
-<html lang="${t("htmlLang")}">
-<head>
-<meta charset="UTF-8">
-<title>${escapeHtml(t("indexTitle", siteFolder))}</title>
-<style>
-  body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }
-  h1 { font-size: 20px; margin: 0 0 4px; }
-  .meta { font-size: 12px; color: #64748b; margin-bottom: 24px; word-break: break-all; }
-  .meta a { color: #2563eb; }
-  h2 { font-size: 15px; margin: 28px 0 12px; }
-  .count { color: #94a3b8; font-weight: normal; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-  .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; text-align: center; }
-  .card a { text-decoration: none; color: inherit; display: block; }
-  .card img { width: 100%; height: 100px; object-fit: cover; display: block; background: #f1f5f9; }
-  .card .icon { width: 100%; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 32px; background: #f1f5f9; }
-  .card .name { font-size: 11px; padding: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-</style>
-</head>
-<body>
-  <h1>${t("indexHeading")}</h1>
-  <p class="meta">${t("indexSource")} <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(sourceUrl)}</a><br>${t("indexGenerated")} ${new Date().toLocaleString(t("dateLocale"))}</p>
-  ${sections || `<p>${t("indexNone")}</p>`}
-</body>
-</html>`;
-}
+// `buildIndexHtml` removed — function was unused after refactor that treats generated HTML links as documents.
 
 function isWeTransferUrl(url) {
   try {
@@ -596,9 +544,13 @@ function isWeTransferUrl(url) {
 
 function appendWeTransferLogs(lines) {
   try {
-    if (!lines || !lines.length) return;
+    if (!lines || !lines.length) {
+      return;
+    }
     const container = document.getElementById("weTransferLogs");
-    if (!container) return;
+    if (!container) {
+      return;
+    }
     container.style.display = "block";
     for (const l of lines) {
       const div = document.createElement('div');
