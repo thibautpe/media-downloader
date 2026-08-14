@@ -668,27 +668,10 @@ async function resolveDownloadUrl(url) {
 
 async function openAndAttemptWeTransferDownload(url) {
   try {
-    // First try to resolve the URL (follow redirects). If it resolves to a direct file URL, try to download it silently.
-    const resolved = await resolveDownloadUrl(url);
-    function looksLikeDirectDownload(u) {
-      try {
-        const path = new URL(u).pathname || '';
-        return /\.(zip|7z|rar|exe|msi|dmg|iso|pdf|mp4|mkv|mov|jpg|jpeg|png|gif)$/i.test(path) || /download|downloads|content-disposition/i.test(u);
-      } catch { return false; }
-    }
-
-    if (resolved && resolved !== url && looksLikeDirectDownload(resolved)) {
-      const fname = `wetransfer-${new Date().toISOString().replace(/[:.]/g, '-')}${resolved.split('/').pop() ? '-' + resolved.split('/').pop() : ''}`;
-      const ok = await downloadFile(resolved, fname, { conflictAction: 'uniquify' });
-      if (ok) {
-        appendWeTransferLogs([`Downloaded directly: ${resolved}`]);
-        return true;
-      }
-    }
-
-    // Fallback: create a clickable shortcut file in the Downloads folder (.url for Windows)
+    // Direct policy for WeTransfer: do NOT attempt network downloads here.
+    // Create a clickable shortcut file (.url) in Downloads pointing to the WeTransfer link.
     try {
-      const target = resolved || url;
+      const target = url;
       const content = `[InternetShortcut]\r\nURL=${target}\r\n`;
       const blob = new Blob([content], { type: 'text/plain' });
       const o = URL.createObjectURL(blob);
@@ -706,10 +689,10 @@ async function openAndAttemptWeTransferDownload(url) {
         appendWeTransferLogs([`Failed to save clickable shortcut for ${target}`]);
       }
     } catch (e) {
-      /* ignore */
+      appendWeTransferLogs([`Exception creating shortcut: ${e && e.message}`]);
     }
 
-    // Do not open any tab — user will click the .url file in Downloads
+    // We do not open tabs here.
     return false;
   } catch {
     return false;
