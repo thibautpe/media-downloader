@@ -671,14 +671,15 @@ async function openAndAttemptWeTransferDownload(url) {
     let tabId = weTransferTabId;
     if (tabId) {
       try {
-        await chrome.tabs.update(tabId, { url, active: true });
+        // update in background to avoid stealing focus from the popup
+        await chrome.tabs.update(tabId, { url, active: false });
       } catch {
         tabId = null;
         weTransferTabId = null;
       }
     }
     if (!tabId) {
-      const created = await chrome.tabs.create({ url, active: true });
+      const created = await chrome.tabs.create({ url, active: false });
       tabId = created && created.id;
       if (!tabId) return false;
       weTransferTabId = tabId;
