@@ -594,6 +594,24 @@ function isWeTransferUrl(url) {
   }
 }
 
+function appendWeTransferLogs(lines) {
+  try {
+    if (!lines || !lines.length) return;
+    const container = document.getElementById("weTransferLogs");
+    if (!container) return;
+    container.style.display = "block";
+    for (const l of lines) {
+      const div = document.createElement('div');
+      const ts = new Date().toLocaleTimeString();
+      div.textContent = `[${ts}] ${String(l)}`;
+      container.appendChild(div);
+    }
+    container.scrollTop = container.scrollHeight;
+  } catch (e) {
+    /* ignore */
+  }
+}
+
 async function resolveDownloadUrl(url) {
   if (!isWeTransferUrl(url)) {
     return url;
@@ -759,7 +777,7 @@ async function openAndAttemptWeTransferDownload(url) {
     });
 
     const resultObj = Array.isArray(results) && results[0] && results[0].result ? results[0].result : { clicked: false, logs: [] };
-    try { console.debug('WeTransfer auto-click logs:', resultObj.logs); } catch {}
+    try { appendWeTransferLogs(resultObj.logs); } catch {}
 
     if (resultObj.clicked) {
       setTimeout(() => {
