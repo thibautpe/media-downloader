@@ -668,164 +668,49 @@ async function resolveDownloadUrl(url) {
 
 async function openAndAttemptWeTransferDownload(url) {
   try {
-    let tabId = weTransferTabId;
-    if (tabId) {
+    // First try to resolve the URL (follow redirects). If it resolves to a direct file URL, try to download it silently.
+    const resolved = await resolveDownloadUrl(url);
+    function looksLikeDirectDownload(u) {
       try {
-        // update in background to avoid stealing focus from the popup
-        await chrome.tabs.update(tabId, { url, active: false });
-      } catch {
-        tabId = null;
-        weTransferTabId = null;
+        const path = new URL(u).pathname || '';
+        return /\.(zip|7z|rar|exe|msi|dmg|iso|pdf|mp4|mkv|mov|jpg|jpeg|png|gif)$/i.test(path) || /download|downloads|content-disposition/i.test(u);
+      } catch { return false; }
+    }
+
+    if (resolved && resolved !== url && looksLikeDirectDownload(resolved)) {
+      const fname = `wetransfer-${new Date().toISOString().replace(/[:.]/g, '-')}${resolved.split('/').pop() ? '-' + resolved.split('/').pop() : ''}`;
+      const ok = await downloadFile(resolved, fname, { conflictAction: 'uniquify' });
+      if (ok) {
+        appendWeTransferLogs([`Downloaded directly: ${resolved}`]);
+        return true;
       }
     }
-    if (!tabId) {
-      const created = await chrome.tabs.create({ url, active: false });
-      tabId = created && created.id;
-      if (!tabId) return false;
-      weTransferTabId = tabId;
+
+    // Fallback: create a clickable shortcut file in the Downloads folder (.url for Windows)
+    try {
+      const target = resolved || url;
+      const content = `[InternetShortcut]\r\nURL=${target}\r\n`;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const o = URL.createObjectURL(blob);
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `wetransfer-link-${ts}.url`;
+      const created = await new Promise((resolve) => {
+        chrome.downloads.download({ url: o, filename, saveAs: false }, (id) => {
+          resolve(!(chrome.runtime.lastError || id === undefined));
+        });
+      });
+      setTimeout(() => URL.revokeObjectURL(o), 5000);
+      if (created) {
+        appendWeTransferLogs([`Saved clickable shortcut: ${filename}`]);
+      } else {
+        appendWeTransferLogs([`Failed to save clickable shortcut for ${target}`]);
+      }
+    } catch (e) {
+      /* ignore */
     }
 
-    // wait for load complete or timeout
-    await new Promise((res) => {
-      const onUpdated = (updatedTabId, changeInfo) => {
-        if (updatedTabId === tabId && changeInfo.status === "complete") {
-          chrome.tabs.onUpdated.removeListener(onUpdated);
-          res();
-        }
-      };
-      chrome.tabs.onUpdated.addListener(onUpdated);
-      setTimeout(() => {
-        try { chrome.tabs.onUpdated.removeListener(onUpdated); } catch {}
-        res();
-      }, 10000);
-    });
-
-    const results = await chrome.scripting.executeScript({
-      target: { tabId },
-      world: "MAIN",
-      func: () => {
-        const logs = [];
-        function log(msg) { try { logs.push(String(msg)); } catch {} }
-
-        // deep query across shadow roots
-        function queryAllDeep(selector) {
-          const results = [];
-          function walk(root) {
-            try {
-              const found = root.querySelectorAll(selector || "*");
-              found.forEach((n) => results.push(n));
-            } catch (e) {}
-            const nodes = root.children || [];
-            for (const n of nodes) {
-              if (n.shadowRoot) walk(n.shadowRoot);
-              // also recurse into iframes same-origin
-              if (n.tagName === "IFRAME") {
-                try { if (n.contentDocument) walk(n.contentDocument); } catch (e) {}
-              }
-            }
-          }
-          walk(document);
-          return results;
-        }
-
-        function tryClick(el) {
-          if (!el) return false;
-          try {
-            // simulate full pointer sequence
-            el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true }));
-            el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, composed: true }));
-            el.click();
-            return true;
-          } catch (e) {
-            return false;
-          }
-        }
-
-        try {
-          // Candidate selectors and textual matches
-          const selCandidates = [
-            'button[aria-label="Download"]',
-            'button[data-test="download-button"]',
-            'button[data-qa="download-button"]',
-            'button[class*=download]',
-            'a[class*=download]',
-            'a[download]',
-            'a[href*="/downloads/"]',
-            'a[href*="/download/"]'
-          ];
-
-          for (const sel of selCandidates) {
-            const nodes = queryAllDeep(sel);
-            if (nodes && nodes.length > 0) {
-              log(`found ${nodes.length} nodes for selector ${sel}`);
-              for (const n of nodes) {
-                if (tryClick(n)) { log(`clicked node for ${sel}`); return { clicked: true, logs }; }
-              }
-            }
-          }
-
-          // Search by visible text (Download / Télécharger)
-          const textPatterns = [/\bdownload\b/i, /\btélécharg/i, /\btélécharger\b/i, /\bdescargar\b/i];
-          const all = queryAllDeep('a,button');
-          for (const el of all) {
-            try {
-              const text = (el.innerText || el.textContent || '').trim();
-              if (!text) continue;
-              for (const pat of textPatterns) {
-                if (pat.test(text)) {
-                  log(`matched text "${text.substring(0,40)}"`);
-                  if (tryClick(el)) { log('clicked by text'); return { clicked: true, logs }; }
-                }
-              }
-            } catch (e) {}
-          }
-
-          // As a last resort, observe mutations for a short time and click when a download-like element appears
-          return new Promise((resolve) => {
-            const observer = new MutationObserver((mutations) => {
-              for (const m of mutations) {
-                const added = Array.from(m.addedNodes || []);
-                for (const n of added) {
-                  try {
-                    if (n.nodeType === 1) {
-                      const node = n.matches && n.matches('a,button') ? n : n.querySelector && n.querySelector('a,button');
-                      if (node) {
-                        const txt = (node.innerText || node.textContent || '').toLowerCase();
-                        if (/download|télécharg|descargar/.test(txt) || /download|downloads|/i.test(node.href || '')) {
-                          observer.disconnect();
-                          log('mutation matched new node, attempting click');
-                          if (tryClick(node)) { resolve({ clicked: true, logs }); } else { resolve({ clicked: false, logs }); }
-                          return;
-                        }
-                      }
-                    }
-                  } catch (e) {}
-                }
-              }
-            });
-            observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
-            // timeout: stop observing after 8s
-            setTimeout(() => { observer.disconnect(); log('mutation observer timeout'); resolve({ clicked: false, logs }); }, 8000);
-          });
-        } catch (e) {
-          log('exception in click heuristic: ' + (e && e.message));
-          return { clicked: false, logs };
-        }
-      },
-    });
-
-    const resultObj = Array.isArray(results) && results[0] && results[0].result ? results[0].result : { clicked: false, logs: [] };
-    try { appendWeTransferLogs(resultObj.logs); } catch {}
-
-    if (resultObj.clicked) {
-      setTimeout(() => {
-        try { chrome.tabs.remove(tabId); } catch {}
-        if (weTransferTabId === tabId) weTransferTabId = null;
-      }, 4000);
-    } else {
-      weTransferTabId = tabId;
-    }
-    return Boolean(resultObj.clicked);
+    // Do not open any tab — user will click the .url file in Downloads
+    return false;
   } catch {
     return false;
   }
