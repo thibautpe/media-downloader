@@ -822,7 +822,8 @@ async function downloadSelected() {
       if (!ok && isWeTransferUrl(entry.url)) {
         try {
           // Create a clickable HTML page in the site's folder (treat as PDF-equivalent)
-          const createdRel = await openAndAttemptWeTransferDownload(entry.url, folder);
+          const siteSubFolder = `${siteFolder}/${folder}`;
+          const createdRel = await openAndAttemptWeTransferDownload(entry.url, siteSubFolder);
           if (createdRel) {
             // record as a PDF-like entry
             ok = true;
