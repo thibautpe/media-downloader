@@ -672,13 +672,13 @@ async function openAndAttemptWeTransferDownload(url, targetFolder = null) {
     // Create a clickable shortcut file (.url) in Downloads pointing to the WeTransfer link.
     try {
       const target = url;
-      const content = `[InternetShortcut]\r\nURL=${target}\r\n`;
-      const blob = new Blob([content], { type: 'text/plain' });
+      const content = `<!doctype html><html><head><meta charset="utf-8"><title>WeTransfer link</title></head><body style="font-family:Arial,Helvetica,sans-serif;padding:20px;"><h2>WeTransfer link</h2><p>Click the link below to open the download page:</p><p><a href="${target}" target="_blank" rel="noopener">Open WeTransfer page</a></p></body></html>`;
+      const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
       const o = URL.createObjectURL(blob);
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       // Save inside the site's download folder if provided, otherwise root Downloads
       const safeFolder = targetFolder ? `${targetFolder}` : '';
-      const filename = safeFolder ? `${safeFolder}/wetransfer-link-${ts}.url` : `wetransfer-link-${ts}.url`;
+      const filename = safeFolder ? `${safeFolder}/wetransfer-link-${ts}.html` : `wetransfer-link-${ts}.html`;
       const created = await new Promise((resolve) => {
         chrome.downloads.download({ url: o, filename, saveAs: false }, (id) => {
           resolve(id);
@@ -686,11 +686,11 @@ async function openAndAttemptWeTransferDownload(url, targetFolder = null) {
       });
       setTimeout(() => URL.revokeObjectURL(o), 5000);
       if (created) {
-        appendWeTransferLogs([`Saved clickable shortcut: ${filename}`]);
+        appendWeTransferLogs([`Saved HTML link page: ${filename}`]);
         // return the relative path so caller can add it to the manifest
         return filename;
       } else {
-        appendWeTransferLogs([`Failed to save clickable shortcut for ${target}`]);
+        appendWeTransferLogs([`Failed to save HTML link page for ${target}`]);
         return null;
       }
     } catch (e) {
